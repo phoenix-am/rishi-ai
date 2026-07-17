@@ -1,0 +1,24 @@
+# Build outputs and caching directories
+node_modules/
+dist/
+build/
+out/
+.pnpm-store/
+.vscode/
+.vitest-cache/
+coverage/
+
+# Database migrations
+packages/database/migrations/
+
+# Immutable documentation files
+.docs/
+docs/adr/
+docs/rfcs/
+
+# Custom files
+*.js
+*.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+*.html

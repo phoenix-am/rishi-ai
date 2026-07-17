@@ -1,0 +1,15 @@
+{
+  "extends": "../../configs/typescript/tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../shared" },
+    { "path": "../domain" },
+    { "path": "../config" },
+    { "path": "../logger" },
+    { "path": "../transaction" }
+  ]
+}

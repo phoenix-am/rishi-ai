@@ -1,0 +1,32 @@
+# Ignore build and dependency folders
+node_modules/
+dist/
+build/
+out/
+.pnpm-store/
+.vscode/
+
+# Ignore lock and configuration files
+package.json
+pnpm-lock.yaml
+tsconfig.json
+pnpm-workspace.yaml
+
+# Ignore Drizzle migrations and metadata
+packages/database/migrations/
+
+# Ignore immutable specifications
+.docs/
+docs/adr/
+docs/rfcs/
+
+# Ignore binary and temp files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.pdf
+coverage/
+.vitest-cache/

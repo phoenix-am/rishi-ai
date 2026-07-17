@@ -1,0 +1,67 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Build and Verify
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: ankane/pgvector:16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rishi_ai
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify Formatting
+        run: pnpm run format:check
+
+      - name: Run Linting Checks
+        run: pnpm run lint
+
+      - name: Verify Type Checking
+        run: pnpm run typecheck
+
+      - name: Run Vitest Unit Tests
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rishi_ai
+          PRIMARY_AI_PROVIDER: gemini
+          AES_MASTER_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          LOG_LEVEL: error
+        run: pnpm run test
+
+      - name: Run Production Build Validation
+        run: pnpm run build

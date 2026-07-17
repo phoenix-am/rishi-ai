@@ -1,0 +1,32 @@
+name: Test Run
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Test
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rishi_test
+          PRIMARY_AI_PROVIDER: gemini
+          AES_MASTER_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          LOG_LEVEL: error
+        run: pnpm run test

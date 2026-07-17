@@ -1,0 +1,156 @@
+Rishi AI Proprietary Software License
+Version 1.0
+Copyright (c) 2026 Rishi AI. All Rights Reserved.
+
+IMPORTANT: READ THIS LICENSE CAREFULLY BEFORE ACCESSING, COPYING, MODIFYING,
+OR USING THIS SOFTWARE.
+
+1. OWNERSHIP
+
+This repository, including but not limited to all source code, object code,
+algorithms, software architecture, APIs, workflows, documentation, diagrams,
+design assets, prompts, database schemas, configuration files, tests,
+build scripts, specifications, and all other accompanying materials
+(collectively referred to as the "Software"), is the exclusive intellectual
+property of Rishi AI and its copyright owner.
+
+All rights not expressly granted under this License are reserved.
+
+No ownership, title, trademark rights, patent rights, trade secret rights,
+or any other intellectual property rights are transferred by providing access
+to this repository.
+
+--------------------------------------------------------------------
+
+2. LICENSE GRANT
+
+No license is granted to use, copy, modify, distribute, sublicense,
+publish, commercialize, reverse engineer, or create derivative works
+from the Software except where explicit written permission has been
+provided by the copyright owner.
+
+Access to the source code does not imply permission to use the Software.
+
+--------------------------------------------------------------------
+
+3. RESTRICTIONS
+
+Without prior written authorization from the copyright owner, you may NOT:
+
+• Copy any portion of the Software.
+• Modify the Software.
+• Fork this repository.
+• Redistribute the Software.
+• Publish the Software.
+• Upload the Software to another repository.
+• Create derivative works.
+• Commercialize any portion of the Software.
+• Sell, rent, lease, sublicense, or transfer the Software.
+• Use the Software to develop competing products or services.
+• Use the Software for production deployments.
+• Remove or alter copyright notices.
+• Reverse engineer architectural decisions for commercial purposes.
+
+--------------------------------------------------------------------
+
+4. INTERNAL DEVELOPMENT
+
+Unless otherwise agreed in writing, this Software is intended solely for the
+internal development, testing, operation, and maintenance of the Rishi AI
+platform.
+
+No third party acquires any usage rights merely by obtaining access to the
+repository.
+
+--------------------------------------------------------------------
+
+5. CONTRIBUTIONS
+
+Unless otherwise agreed in writing, any code, documentation, suggestions,
+bug reports, pull requests, ideas, or other contributions submitted to this
+repository become the property of the copyright owner.
+
+By submitting a contribution, the contributor grants Rishi AI a perpetual,
+worldwide, irrevocable, royalty-free license to use, modify, distribute,
+commercialize, sublicense, and incorporate that contribution into the
+Software.
+
+--------------------------------------------------------------------
+
+6. CONFIDENTIALITY
+
+Portions of this repository may contain confidential business information,
+technical designs, proprietary implementation strategies, algorithms,
+architectural decisions, product roadmaps, prompt engineering techniques,
+and other trade secrets.
+
+Unauthorized disclosure or distribution is strictly prohibited.
+
+--------------------------------------------------------------------
+
+7. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT,
+PERFORMANCE, AVAILABILITY, OR ACCURACY.
+
+THE ENTIRE RISK ARISING OUT OF THE USE OF THE SOFTWARE REMAINS WITH THE USER.
+
+--------------------------------------------------------------------
+
+8. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL THE COPYRIGHT OWNER, CONTRIBUTORS, AFFILIATES,
+LICENSORS, OR ANY RELATED PARTY BE LIABLE FOR ANY CLAIM, DAMAGES,
+LOSSES, OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT, NEGLIGENCE,
+STRICT LIABILITY, OR OTHERWISE, ARISING FROM OR RELATED TO THE SOFTWARE,
+ITS USE, OR THE INABILITY TO USE THE SOFTWARE.
+
+THIS LIMITATION APPLIES EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+--------------------------------------------------------------------
+
+9. TERMINATION
+
+Any unauthorized use of the Software immediately terminates any permission,
+whether express or implied.
+
+Upon termination, all copies of the Software must be permanently destroyed.
+
+--------------------------------------------------------------------
+
+10. RESERVATION OF RIGHTS
+
+All intellectual property rights, including copyrights, trademarks,
+trade secrets, patents, source code, software architecture, prompts,
+designs, documentation, workflows, APIs, and associated materials remain
+the exclusive property of Rishi AI.
+
+No rights are granted except those expressly stated in a separate written
+agreement signed by the copyright owner.
+
+--------------------------------------------------------------------
+
+11. GOVERNING LAW
+
+This License shall be governed by and interpreted in accordance with the
+laws of the Republic of India.
+
+Any dispute arising under this License shall be subject to the exclusive
+jurisdiction of the competent courts located in Gujarat, India.
+
+--------------------------------------------------------------------
+
+12. CONTACT
+
+For licensing inquiries, commercial licensing requests, partnership
+opportunities, or written permission regarding this Software, contact:
+
+Rishi AI
+Email: legal@rishiai.com
+
+--------------------------------------------------------------------
+
+Copyright (c) 2026 Rishi AI.
+All Rights Reserved.

@@ -1,0 +1,22 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Run weekly
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Audit Dependencies
+        run: pnpm audit --prod
