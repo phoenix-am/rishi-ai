@@ -135,6 +135,9 @@ importers:
       '@rishi/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@rishi/transaction':
+        specifier: workspace:*
+        version: link:../../packages/transaction
       fastify:
         specifier: ^5.2.0
         version: 5.10.0

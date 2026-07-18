@@ -1,0 +1,140 @@
+import {
+  Creator,
+  Project,
+  KnowledgeAsset,
+  ScriptBlock,
+  KnowledgeSnapshot,
+  ProjectMemory,
+} from "./entities.js";
+
+export const CREATOR_REPOSITORY = Symbol.for("CreatorRepository");
+export const KNOWLEDGE_ASSET_REPOSITORY = Symbol.for("KnowledgeAssetRepository");
+export const KNOWLEDGE_SNAPSHOT_REPOSITORY = Symbol.for("KnowledgeSnapshotRepository");
+export const SCRIPT_BLOCK_REPOSITORY = Symbol.for("ScriptBlockRepository");
+export const PROJECT_MEMORY_REPOSITORY = Symbol.for("ProjectMemoryRepository");
+export const PROJECT_REPOSITORY = Symbol.for("ProjectRepository");
+
+/**
+ * Interface contract for Creator persistence operations.
+ */
+export interface ICreatorRepository {
+  /**
+   * Resolves a creator by their unique ID.
+   */
+  findById(id: string): Promise<Creator | null>;
+
+  /**
+   * Resolves a creator by their unique email address.
+   */
+  findByEmail(email: string): Promise<Creator | null>;
+
+  /**
+   * Saves the creator state (insert or update).
+   */
+  save(creator: Creator): Promise<void>;
+
+  /**
+   * Checks if a creator with the given ID exists.
+   */
+  exists(id: string): Promise<boolean>;
+}
+
+/**
+ * Interface contract for Project aggregate root persistence.
+ */
+export interface IProjectRepository {
+  /**
+   * Resolves a project aggregate by ID.
+   */
+  findById(id: string): Promise<Project | null>;
+
+  /**
+   * Saves the project aggregate and captures transactional event queues.
+   */
+  save(project: Project): Promise<void>;
+
+  /**
+   * Checks if a project exists.
+   */
+  exists(id: string): Promise<boolean>;
+}
+
+/**
+ * Interface contract for KnowledgeAsset library documents persistence.
+ */
+export interface IKnowledgeAssetRepository {
+  /**
+   * Resolves a knowledge asset by ID.
+   */
+  findById(id: string): Promise<KnowledgeAsset | null>;
+
+  /**
+   * Saves the asset state.
+   */
+  save(asset: KnowledgeAsset): Promise<void>;
+
+  /**
+   * Checks if an asset exists.
+   */
+  exists(id: string): Promise<boolean>;
+}
+
+/**
+ * Interface contract for ScriptBlock segment persistence.
+ */
+export interface IScriptBlockRepository {
+  /**
+   * Resolves a specific script block.
+   */
+  findById(id: string): Promise<ScriptBlock | null>;
+
+  /**
+   * Resolves all script blocks associated with a specific project container.
+   */
+  findByProjectId(projectId: string): Promise<ScriptBlock[]>;
+
+  /**
+   * Saves a script block.
+   */
+  save(block: ScriptBlock): Promise<void>;
+
+  /**
+   * Atomically saves or updates a batch of script blocks.
+   */
+  saveMany(blocks: ScriptBlock[]): Promise<void>;
+}
+
+/**
+ * Interface contract for KnowledgeSnapshot persistence.
+ */
+export interface IKnowledgeSnapshotRepository {
+  /**
+   * Resolves a specific snapshot.
+   */
+  findById(id: string): Promise<KnowledgeSnapshot | null>;
+
+  /**
+   * Resolves all snapshots attached to a specific project.
+   */
+  findByProjectId(projectId: string): Promise<KnowledgeSnapshot[]>;
+
+  /**
+   * Saves a snapshot.
+   */
+  save(snapshot: KnowledgeSnapshot): Promise<void>;
+}
+
+/**
+ * Interface contract for ProjectMemory persistence.
+ */
+export interface IProjectMemoryRepository {
+  /**
+   * Resolves all memory logs registered for a specific project.
+   */
+  findByProjectId(projectId: string): Promise<ProjectMemory[]>;
+
+  /**
+   * Persists a new memory log entry.
+   */
+  save(memory: ProjectMemory): Promise<void>;
+}

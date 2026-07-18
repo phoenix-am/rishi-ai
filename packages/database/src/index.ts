@@ -93,3 +93,35 @@ export class DatabaseService {
     await this.pool.end();
   }
 }
+
+// Re-export Schema tables
+export {
+  creators,
+  knowledgeAssets,
+  projects,
+  knowledgeSnapshots,
+  scriptBlocks,
+  projectMemories,
+} from "./schema/index.js";
+
+// Re-export Mappers
+export {
+  CreatorMapper,
+  AssetMapper,
+  SnapshotMapper,
+  BlockMapper,
+  MemoryMapper,
+  ProjectMapper,
+} from "./mappers.js";
+
+// Re-export Repository implementations
+export { DrizzleCreatorRepository } from "./repositories/creator.js";
+export { DrizzleKnowledgeAssetRepository } from "./repositories/asset.js";
+export { DrizzleKnowledgeSnapshotRepository } from "./repositories/snapshot.js";
+export { DrizzleScriptBlockRepository } from "./repositories/block.js";
+export { DrizzleProjectMemoryRepository } from "./repositories/memory.js";
+export {
+  DrizzleProjectRepository,
+  PersistenceException,
+  OptimisticLockingException,
+} from "./repositories/project.js";

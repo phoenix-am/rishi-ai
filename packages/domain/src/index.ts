@@ -1,28 +1,72 @@
 /**
- * Core business interfaces and domain structures
+ * Public API Entrypoint for the Rishi AI Domain Layer.
+ * Exports pure domain entities, aggregate roots, value objects, domain events,
+ * repository interfaces, domain services, and domain exceptions.
  */
 
-export interface ICreator {
-  id: string;
-  email: string;
-  createdAt: Date;
-}
+// Re-export type-only interfaces and statuses
+export type {
+  ICreator,
+  IProject,
+  IScriptBlock,
+  CreatorStatus,
+  KnowledgeAssetStatus,
+  WorkingContextStatus,
+  ScriptBlockStatus,
+  ProjectState,
+} from "./entities.js";
 
-export interface IProject {
-  id: string;
-  creatorId: string;
-  title: string;
-  state: string;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Re-export concrete entities and aggregate roots
+export {
+  Creator,
+  KnowledgeAsset,
+  KnowledgeSnapshot,
+  ProjectMemory,
+  WorkingContext,
+  ScriptBlock,
+  Project,
+} from "./entities.js";
 
-export interface IScriptBlock {
-  id: string;
-  projectId: string;
-  sortOrder: number;
-  isLocked: boolean;
-  title: string;
-  content: string;
-}
+// Value Objects
+export { Email, SpeakingPacingInfo, ConfidenceScore, SourceCoverage } from "./value-objects.js";
+
+// Exceptions
+export {
+  DomainException,
+  EntityNotFoundException,
+  InvalidStateTransitionException,
+  ValidationException,
+} from "./exceptions.js";
+
+// Repositories (Types)
+export type {
+  ICreatorRepository,
+  IProjectRepository,
+  IKnowledgeAssetRepository,
+  IScriptBlockRepository,
+  IKnowledgeSnapshotRepository,
+  IProjectMemoryRepository,
+} from "./repositories.js";
+
+// Domain Events (Base interface as type, concrete classes as values)
+export type { IDomainEvent } from "./events.js";
+export {
+  ProjectCreatedDomainEvent,
+  ProjectStateTransitionedDomainEvent,
+  ScriptBlockUpdatedDomainEvent,
+  KnowledgeAssetAddedDomainEvent,
+  ContextDriftDetectedDomainEvent,
+} from "./events.js";
+
+// Domain Services
+export { ProjectWorkflowService } from "./services.js";
+
+// Repository Symbols
+export {
+  CREATOR_REPOSITORY,
+  KNOWLEDGE_ASSET_REPOSITORY,
+  KNOWLEDGE_SNAPSHOT_REPOSITORY,
+  SCRIPT_BLOCK_REPOSITORY,
+  PROJECT_MEMORY_REPOSITORY,
+  PROJECT_REPOSITORY,
+} from "./repositories.js";
