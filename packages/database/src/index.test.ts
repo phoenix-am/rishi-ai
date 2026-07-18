@@ -1,5 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
-import { createDatabaseClient, DatabaseService } from "./index.js";
+import {
+  createDatabaseClient,
+  DatabaseService,
+  users,
+  workspaces,
+  workspaceMembers,
+  sessions,
+  usersRelations,
+  workspacesRelations,
+  workspaceMembersRelations,
+  sessionsRelations,
+} from "./index.js";
 import { ConfigService } from "@rishi/config";
 import { TransactionManager } from "@rishi/transaction";
 
@@ -10,6 +21,17 @@ describe("Database Module", () => {
     DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
     AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     LOG_LEVEL: "info",
+  });
+
+  it("should define and export identity and multi-tenancy schemas and relations", () => {
+    expect(users).toBeDefined();
+    expect(workspaces).toBeDefined();
+    expect(workspaceMembers).toBeDefined();
+    expect(sessions).toBeDefined();
+    expect(usersRelations).toBeDefined();
+    expect(workspacesRelations).toBeDefined();
+    expect(workspaceMembersRelations).toBeDefined();
+    expect(sessionsRelations).toBeDefined();
   });
 
   it("should initialize client and pool lazily without opening network connections on construction", () => {

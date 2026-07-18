@@ -82,3 +82,89 @@ export const projectMemories = pgTable("project_memories", {
   payload: jsonb("payload").default({}).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+/**
+ * Database schema for Users.
+ */
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  role: text("role").notNull().default("user"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
+ * Database schema for Workspaces.
+ */
+export const workspaces = pgTable("workspaces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  ownerId: uuid("owner_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+/**
+ * Database schema for Workspace Members.
+ */
+export const workspaceMembers = pgTable("workspace_members", {
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
+    .notNull(),
+  role: text("role").notNull(),
+});
+
+/**
+ * Database schema for Sessions.
+ */
+export const sessions = pgTable("sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  refreshTokenHash: text("refresh_token_hash").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  isRevoked: boolean("is_revoked").default(false).notNull(),
+  deviceMetadata: jsonb("device_metadata").default({}).notNull(),
+});
+
+// Import relations from drizzle-orm
+import { relations } from "drizzle-orm";
+
+/**
+ * Relations definitions for user, workspace, membership, and session tables.
+ */
+export const usersRelations = relations(users, ({ many }) => ({
+  workspaceMemberships: many(workspaceMembers),
+  sessions: many(sessions),
+}));
+
+export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [workspaces.ownerId],
+    references: [users.id],
+  }),
+  workspaceMembers: many(workspaceMembers),
+}));
+
+export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
+  user: one(users, {
+    fields: [workspaceMembers.userId],
+    references: [users.id],
+  }),
+  workspace: one(workspaces, {
+    fields: [workspaceMembers.workspaceId],
+    references: [workspaces.id],
+  }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));

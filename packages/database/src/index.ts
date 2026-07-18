@@ -94,7 +94,7 @@ export class DatabaseService {
   }
 }
 
-// Re-export Schema tables
+// Re-export Schema tables and relations
 export {
   creators,
   knowledgeAssets,
@@ -102,6 +102,14 @@ export {
   knowledgeSnapshots,
   scriptBlocks,
   projectMemories,
+  users,
+  workspaces,
+  workspaceMembers,
+  sessions,
+  usersRelations,
+  workspacesRelations,
+  workspaceMembersRelations,
+  sessionsRelations,
 } from "./schema/index.js";
 
 // Re-export Mappers
