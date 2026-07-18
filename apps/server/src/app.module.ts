@@ -1,11 +1,8 @@
 import { Module, OnModuleInit, Inject } from "@nestjs/common";
 import { ConfigService } from "@rishi/config";
-import { LoggerFactory } from "@rishi/logger";
 import type { ILogger } from "@rishi/logger";
-import { TransactionManager } from "@rishi/transaction";
+import { DatabaseService } from "@rishi/database";
 import {
-  createDatabaseClient,
-  DatabaseService,
   DrizzleCreatorRepository,
   DrizzleKnowledgeAssetRepository,
   DrizzleKnowledgeSnapshotRepository,
@@ -23,42 +20,18 @@ import {
   PROJECT_REPOSITORY,
 } from "@rishi/domain";
 
+import { DatabaseModule } from "./foundation/database/database.module.js";
+import { FoundationModule } from "./foundation/foundation.module.js";
+import { HealthModule } from "./foundation/health/health.module.js";
+
 @Module({
+  imports: [
+    DatabaseModule, // Exports Config, Logger, TransactionManager, DB client/service
+    FoundationModule, // Registers Global Interceptor & Exception Filter
+    HealthModule, // Health checks endpoint
+  ],
   providers: [
-    // 1. Config Service
-    {
-      provide: ConfigService,
-      useFactory: () => new ConfigService(),
-    },
-    // 2. Logger Service
-    {
-      provide: "ILogger",
-      useFactory: (configService: ConfigService) => {
-        return LoggerFactory.createLogger(configService);
-      },
-      inject: [ConfigService],
-    },
-    // 3. Transaction Manager (Singleton with request-isolated context storage)
-    {
-      provide: TransactionManager,
-      useFactory: () => new TransactionManager(),
-    },
-    // 4. Database Connection Pool and Service (Singleton)
-    {
-      provide: "DRIZZLE_CLIENT",
-      useFactory: (configService: ConfigService) => {
-        return createDatabaseClient(configService);
-      },
-      inject: [ConfigService],
-    },
-    {
-      provide: DatabaseService,
-      useFactory: (drizzleClient: { pool: any; db: any }, txManager: TransactionManager) => {
-        return new DatabaseService(drizzleClient.pool, drizzleClient.db, txManager);
-      },
-      inject: ["DRIZZLE_CLIENT", TransactionManager],
-    },
-    // 5. Repository Implementations (Singleton dependency inversion adapters)
+    // Repository Implementations (Singleton dependency inversion adapters)
     {
       provide: CREATOR_REPOSITORY,
       useFactory: (dbService: DatabaseService) => new DrizzleCreatorRepository(dbService),
@@ -89,18 +62,14 @@ import {
       useFactory: (dbService: DatabaseService) => new DrizzleProjectRepository(dbService),
       inject: [DatabaseService],
     },
-    // 6. Domain Services
+    // Domain Services
     {
       provide: ProjectWorkflowService,
       useClass: ProjectWorkflowService,
     },
   ],
   exports: [
-    ConfigService,
-    "ILogger",
-    "DRIZZLE_CLIENT",
-    TransactionManager,
-    DatabaseService,
+    DatabaseModule,
     CREATOR_REPOSITORY,
     KNOWLEDGE_ASSET_REPOSITORY,
     KNOWLEDGE_SNAPSHOT_REPOSITORY,

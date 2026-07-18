@@ -7,7 +7,13 @@ describe("Logger Module", () => {
     NODE_ENV: "test",
     PORT: 3000,
     DATABASE_URL: "postgresql://localhost:5432/test",
+    PRIMARY_AI_PROVIDER: "gemini",
+    AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     LOG_LEVEL: "debug",
+    ENABLE_SWAGGER: false,
+    ALLOWED_ORIGINS: "*",
+    RATE_LIMIT_MAX: 100,
+    BODY_LIMIT_BYTES: 1048576,
   };
 
   it("should output correlation ID when provider returns it", () => {

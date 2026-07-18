@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import {
   initializeConfig,
   getConfig,
@@ -7,11 +7,21 @@ import {
 } from "./index.js";
 
 describe("Config Module", () => {
+  beforeAll(() => {
+    process.env.NODE_ENV = "test";
+    process.env.PORT = "3000";
+    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/rishi_ai";
+    process.env.PRIMARY_AI_PROVIDER = "gemini";
+    process.env.AES_MASTER_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+  });
+
   it("should successfully parse and validate a correct environment config", () => {
     const validEnv = {
       NODE_ENV: "test",
       PORT: "3000",
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+      PRIMARY_AI_PROVIDER: "gemini",
+      AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
     };
     const parsed = initializeConfig(validEnv);
@@ -25,6 +35,8 @@ describe("Config Module", () => {
       NODE_ENV: "production",
       PORT: "not-a-number",
       DATABASE_URL: "invalid-url",
+      PRIMARY_AI_PROVIDER: "gemini",
+      AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
     };
     expect(() => initializeConfig(invalidEnv)).toThrow(ConfigurationValidationError);
@@ -42,6 +54,8 @@ describe("Config Module", () => {
       NODE_ENV: "test",
       PORT: "3000",
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+      PRIMARY_AI_PROVIDER: "gemini",
+      AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
     };
     // Should safely return the same config
@@ -54,6 +68,8 @@ describe("Config Module", () => {
       NODE_ENV: "test",
       PORT: "4000",
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+      PRIMARY_AI_PROVIDER: "gemini",
+      AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
     };
     expect(() => initializeConfig(conflictingEnv)).toThrow(
@@ -66,6 +82,8 @@ describe("Config Module", () => {
       NODE_ENV: "development",
       PORT: "5000",
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_custom",
+      PRIMARY_AI_PROVIDER: "gemini",
+      AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "info",
     };
     const configService = new ConfigService(customEnv);

@@ -8,7 +8,13 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
+  PRIMARY_AI_PROVIDER: z.enum(["gemini", "openai", "deepseek", "ollama"]).default("gemini"),
+  AES_MASTER_KEY: z.string().length(64),
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
+  ENABLE_SWAGGER: z.preprocess((val) => val === "true" || val === true, z.boolean()).default(false),
+  ALLOWED_ORIGINS: z.string().default("*"),
+  RATE_LIMIT_MAX: z.coerce.number().default(100),
+  BODY_LIMIT_BYTES: z.coerce.number().default(1048576),
 });
 
 /**
