@@ -41,3 +41,32 @@ These boundaries are automatically audited in the CI pipeline using `eslint-plug
 4. Reference the new package under the root `tsconfig.json` references.
 5. Create a `README.md` defining its responsibility and boundaries.
 6. Register the package pattern inside the ESLint configuration (`configs/eslint/eslint.config.js`) boundaries settings.
+
+## Compilation & Type Checking Architecture
+
+Our monorepo relies on TypeScript Project References to compile packages incrementally and enforce package boundary validation.
+
+### Architectural Design & Assumptions
+
+- **Declaration-Based Resolution**: Workspace packages (e.g., `@rishi/config`, `@rishi/shared`) intentionally expose their public API through generated declaration files (`dist/index.d.ts`). They do not resolve directly to source `.ts` trees during type checking of dependent packages. This preserves package boundary checks via standard Node-like resolution rules.
+- **Build Order Dependency**: Because of declaration-based resolution, dependent packages (such as `@rishi/logger` and `@rishi/domain`) cannot be type-checked unless the declarations of their workspace dependencies exist in `dist/`.
+- **Intentional Workflow**: In a clean workspace (such as a fresh git clone or after running `pnpm clean`), executing `pnpm typecheck` immediately will fail. This is an intentional architectural layout rather than a compilation issue.
+
+### Developer & CI Verification Workflow
+
+Before type checking or testing in a clean workspace:
+
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+2. Build the workspace packages to generate type declarations:
+   ```bash
+   pnpm build
+   ```
+3. Run the type checking:
+   ```bash
+   pnpm typecheck
+   ```
+
+In our GitHub Actions workflows (`ci.yml` and `typecheck.yml`), `pnpm build` is intentionally executed before `pnpm typecheck` to satisfy this resolution order.

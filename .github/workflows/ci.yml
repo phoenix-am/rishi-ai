@@ -50,6 +50,9 @@ jobs:
       - name: Run Linting Checks
         run: pnpm run lint
 
+      - name: Run Production Build
+        run: pnpm run build
+
       - name: Verify Type Checking
         run: pnpm run typecheck
 
@@ -62,6 +65,3 @@ jobs:
           AES_MASTER_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           LOG_LEVEL: error
         run: pnpm run test
-
-      - name: Run Production Build Validation
-        run: pnpm run build

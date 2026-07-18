@@ -21,5 +21,7 @@ jobs:
           cache: "pnpm"
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Build Workspace
+        run: pnpm run build
       - name: Typecheck
         run: pnpm run typecheck
