@@ -8,6 +8,7 @@ describe("Database Module", () => {
     NODE_ENV: "test",
     PORT: "3000",
     DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+    AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     LOG_LEVEL: "info",
   });
 
