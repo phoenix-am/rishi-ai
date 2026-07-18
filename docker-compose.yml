@@ -1,6 +1,6 @@
 services:
   db:
-    image: ankane/pgvector:16
+    image: pgvector/pgvector:pg16
     container_name: rishi-postgres
     restart: unless-stopped
     stop_grace_period: 30s
