@@ -3,11 +3,11 @@
 | Metadata Field | Value |
 | :--- | :--- |
 | **Document Name** | Project Status Tracker |
-| **Version** | 1.9.0 |
+| **Version** | 1.9.1 |
 | **Status** | Active |
 | **Last Updated** | 2026-07-19 |
 | **Owner** | Rishi AI Founder & CTO |
-| **Change Summary** | Mark Phase 4C — Shared API Infrastructure as completed, verified, and frozen. CI green. Ready for Phase 4D. |
+| **Change Summary** | Mark Phase 4C completed. Hotfix: replace proprietary GitHub Dependency Review action with native pnpm audit for private repo CI compatibility. |
 
 ---
 
@@ -193,3 +193,11 @@ None
 - `7618990` — feat(api): implement pagination dtos and validation pipes
 - `8947b3e` — feat(swagger): add reusable openapi response decorators
 - `736f15f` — feat(api): implement base sse streaming infrastructure for future ai pipelines
+
+---
+
+## Hotfixes / Infrastructure Updates
+
+| Date | Branch | Commit | Description |
+| :--- | :--- | :--- | :--- |
+| 2026-07-19 | `hotfix/ci-dependency-audit` | `c33f242` | ✅ Replaced proprietary GitHub Dependency Review with native `pnpm audit --prod --audit-level high` for private repo support. Removed `.github/workflows/dependency-review.yml`; added audit step to `ci.yml`. |
