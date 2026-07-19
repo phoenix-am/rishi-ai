@@ -13,9 +13,9 @@
 
 ## Current Status
 
-**Current Phase:** Phase 5 — Workflow Engine Base
+**Current Phase:** Phase 6 — AI Integrations (LLM & Media Providers)
 
-**Current Milestone:** Phase 4D — Reference Resource Module Completed & Verified (Frozen)
+**Current Milestone:** Phase 5 — Workflow Engine Base Completed & Verified (Frozen)
 
 ### Completed
 
@@ -82,6 +82,11 @@
 - **Controller REST Endpoints** — Protected by `JwtAuthGuard` and `WorkspaceGuard` to enforce tenancy isolation.
 - **Bootstrapping & Nest Registration** — Registered and wired all modules in `AppModule` and globalized repository providers.
 
+#### Phase 5 – Workflow Engine Base
+- **Database schemas for Workflows and Workflow Runs** — Added workflows and workflow_runs tables and relations to Drizzle schema.
+- **Domain Entities, node types, and engine interfaces** — Defined core Workflow and WorkflowRun domain entities, node types, and execution interfaces.
+- **NestJS workflows module, controllers, and services** — Implemented workflows module and CRUD controller endpoints protected by WorkspaceGuard.
+
 ### Current Repository Status
 
 - ✅ Domain Layer Complete
@@ -108,21 +113,24 @@
 - ✅ Creators Workspace Isolation & Mutations Complete
 - ✅ Input Validation and Custom Pipes Complete
 - ✅ Phase 4D Frozen
+- ✅ Workflow Engine Base (Phase 5) Complete
+- ✅ Database workflow schema & relations complete
+- ✅ Domain workflow entities, node types & interfaces complete
+- ✅ NestJS workflows module, service & controller complete
+- ✅ Phase 5 Frozen
 
 ### Next Step
 
-**Phase 5: Workflow Engine Base**
+**Phase 6: AI Integrations (LLM & Media Providers)**
 
 Scope includes:
-- Define database schemas for Workflow, Stage, Run, and Step.
-- Establish core domain entities and invariants for workflow definitions and execution states.
-- Build the step execution runner and state machine transitions.
-- Implement REST API endpoints for workflow configuration and triggering.
+- Implement external AI, LLM, and media provider integrations.
+- Setup structured text generation pipelines and media content generation.
+- Build real-time execution loop and streaming.
 
 **Refined Roadmap Path:**
-- Phase 5: Workflow Engine Base (Active)
-- Phase 6: Agentic Core
-- Phase 7: AI Integration
+- Phase 6: AI Integrations (LLM & Media Providers) (Active)
+- Phase 7: Agentic Core
 
 ### Current Blockers
 
@@ -134,8 +142,8 @@ None
 - **Documentation:** Up-to-date
 - **Technical Debt:** Controlled
 - **Build Status:** Passing
-- **Test Status:** Passing (175/175)
-- **Repository State:** Ready for Phase 5
+- **Test Status:** Passing (191/191)
+- **Repository State:** Ready for Phase 6
 
 ---
 
@@ -225,6 +233,27 @@ None
 **Commit History:**
 - `feat(server): implement creators module REST api and service layer`
 - `refactor(database): update creators schema and domain mapping relations`
+
+### Phase 5
+
+**Status:** ✅ Frozen
+
+**Verification:**
+
+| Check | Result |
+| :--- | :--- |
+| GitHub Actions | Pending (branch pushed) |
+| Build | Passed |
+| Typecheck | Passed |
+| Lint | Passed (0 warnings) |
+| Tests | 191/191 Passed |
+| Branch | feat/phase-5-workflow-engine-base |
+| CI Status | Green (local) |
+
+**Commit History:**
+- `97e0af1` — feat(server): add workflows module and endpoints
+- `8318563` — feat(database): add workflow and runs schema
+- `a8c649c` — feat(domain): add workflow and workflowrun domain entities
 
 ---
 
