@@ -146,36 +146,38 @@ export class AuthApplicationService {
 
     const tokenHash = this.hashToken(refreshToken);
 
-    // Find active session
-    const [session] = await this.dbService.client
-      .select()
-      .from(sessions)
-      .where(and(eq(sessions.refreshTokenHash, tokenHash), eq(sessions.isRevoked, false)))
-      .limit(1);
+    return this.txManager.runInTransaction(this.drizzleClient.db, async () => {
+      // Find active session
+      const [session] = await this.dbService.client
+        .select()
+        .from(sessions)
+        .where(and(eq(sessions.refreshTokenHash, tokenHash), eq(sessions.isRevoked, false)))
+        .limit(1);
 
-    if (!session || Date.now() > session.expiresAt.getTime()) {
-      throw new UnauthorizedException("Invalid, expired, or revoked session.");
-    }
+      if (!session || Date.now() > session.expiresAt.getTime()) {
+        throw new UnauthorizedException("Invalid, expired, or revoked session.");
+      }
 
-    // Fetch user details
-    const [user] = await this.dbService.client
-      .select()
-      .from(users)
-      .where(eq(users.id, session.userId))
-      .limit(1);
+      // Fetch user details
+      const [user] = await this.dbService.client
+        .select()
+        .from(users)
+        .where(eq(users.id, session.userId))
+        .limit(1);
 
-    if (!user) {
-      throw new UnauthorizedException("User associated with this session no longer exists.");
-    }
+      if (!user) {
+        throw new UnauthorizedException("User associated with this session no longer exists.");
+      }
 
-    // Revoke old session to support rotation
-    await this.dbService.client
-      .update(sessions)
-      .set({ isRevoked: true })
-      .where(eq(sessions.id, session.id));
+      // Revoke old session to support rotation
+      await this.dbService.client
+        .update(sessions)
+        .set({ isRevoked: true })
+        .where(eq(sessions.id, session.id));
 
-    // Create new session and return rotated tokens
-    return this.createSession(user.id, user.email, user.role, deviceMetadata);
+      // Create new session and return rotated tokens
+      return this.createSession(user.id, user.email, user.role, deviceMetadata);
+    });
   }
 
   /**

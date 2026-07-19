@@ -1,4 +1,14 @@
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  integer,
+  boolean,
+  timestamp,
+  jsonb,
+  primaryKey,
+  index,
+} from "drizzle-orm/pg-core";
 
 /**
  * Database schema for Creators.
@@ -108,29 +118,41 @@ export const workspaces = pgTable("workspaces", {
 /**
  * Database schema for Workspace Members.
  */
-export const workspaceMembers = pgTable("workspace_members", {
-  userId: uuid("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  workspaceId: uuid("workspace_id")
-    .references(() => workspaces.id, { onDelete: "cascade" })
-    .notNull(),
-  role: text("role").notNull(),
-});
+export const workspaceMembers = pgTable(
+  "workspace_members",
+  {
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    workspaceId: uuid("workspace_id")
+      .references(() => workspaces.id, { onDelete: "cascade" })
+      .notNull(),
+    role: text("role").notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.workspaceId] }),
+  })
+);
 
 /**
  * Database schema for Sessions.
  */
-export const sessions = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  refreshTokenHash: text("refresh_token_hash").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  isRevoked: boolean("is_revoked").default(false).notNull(),
-  deviceMetadata: jsonb("device_metadata").default({}).notNull(),
-});
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    refreshTokenHash: text("refresh_token_hash").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    isRevoked: boolean("is_revoked").default(false).notNull(),
+    deviceMetadata: jsonb("device_metadata").default({}).notNull(),
+  },
+  (t) => ({
+    refreshTokenHashIdx: index("refresh_token_hash_idx").on(t.refreshTokenHash),
+  })
+);
 
 // Import relations from drizzle-orm
 import { relations } from "drizzle-orm";

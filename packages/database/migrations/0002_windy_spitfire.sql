@@ -1,0 +1,2 @@
+ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_user_id_workspace_id_pk" PRIMARY KEY("user_id","workspace_id");--> statement-breakpoint
+CREATE INDEX "refresh_token_hash_idx" ON "sessions" USING btree ("refresh_token_hash");

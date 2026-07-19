@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { createHash, randomInt } from "crypto";
 
 interface StoredOtp {
@@ -7,8 +7,36 @@ interface StoredOtp {
 }
 
 @Injectable()
-export class InMemoryOtpStore {
+export class InMemoryOtpStore implements OnModuleDestroy {
   private readonly otps = new Map<string, StoredOtp>();
+  private readonly cleanupInterval: NodeJS.Timeout;
+
+  constructor() {
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupExpiredOtps();
+      },
+      5 * 60 * 1000
+    );
+  }
+
+  public onModuleDestroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+  }
+
+  /**
+   * Iterates through all stored OTPs and deletes those that have expired.
+   */
+  private cleanupExpiredOtps(): void {
+    const now = Date.now();
+    for (const [email, entry] of this.otps.entries()) {
+      if (now > entry.expiresAt.getTime()) {
+        this.otps.delete(email);
+      }
+    }
+  }
 
   /**
    * Generates a cryptographically secure 6-digit verification code,

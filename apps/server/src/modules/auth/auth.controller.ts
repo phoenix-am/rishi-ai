@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  UnauthorizedException,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { AuthApplicationService } from "./services/auth-application.service.js";
@@ -74,13 +75,16 @@ export class AuthController {
     @Req() request: any,
     @Res({ passthrough: true }) response: any
   ): Promise<{ accessToken: string }> {
-    const oldRefreshToken = request.cookies["refresh_token"];
+    const oldRefreshToken = this.getUnsignedRefreshToken(request);
+    if (!oldRefreshToken) {
+      throw new UnauthorizedException("Invalid or missing refresh token signature.");
+    }
     const userAgent = request.headers["user-agent"] || "unknown";
     const ip = request.ip || "unknown";
     const deviceMetadata = { userAgent, ip };
 
     const { accessToken, refreshToken } = await this.authAppService.refreshSession(
-      oldRefreshToken || "",
+      oldRefreshToken,
       deviceMetadata
     );
 
@@ -96,7 +100,7 @@ export class AuthController {
     @Req() request: any,
     @Res({ passthrough: true }) response: any
   ): Promise<{ success: boolean }> {
-    const refreshToken = request.cookies["refresh_token"];
+    const refreshToken = this.getUnsignedRefreshToken(request);
     await this.authAppService.revokeSession(refreshToken || "");
 
     const isProd = this.configService.get("NODE_ENV") === "production";
@@ -117,6 +121,18 @@ export class AuthController {
 
   // --- Helper Methods ---
 
+  private getUnsignedRefreshToken(request: any): string | null {
+    const cookieVal = request.cookies["refresh_token"];
+    if (!cookieVal) {
+      return null;
+    }
+    const unsigned = request.unsignCookie(cookieVal);
+    if (!unsigned.valid || !unsigned.value) {
+      return null;
+    }
+    return unsigned.value;
+  }
+
   private setRefreshTokenCookie(response: FastifyReply, refreshToken: string): void {
     const isProd = this.configService.get("NODE_ENV") === "production";
 
@@ -126,6 +142,7 @@ export class AuthController {
       secure: isProd,
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      signed: true,
     });
   }
 }
