@@ -3,10 +3,12 @@ import {
   DrizzleCreatorRepository,
   DrizzleKnowledgeAssetRepository,
   DrizzleProjectRepository,
+  DrizzleWorkflowRepository,
+  DrizzleWorkflowRunRepository,
   PersistenceException,
   OptimisticLockingException,
 } from "./index.js";
-import { Creator, Project, ScriptBlock } from "@rishi/domain";
+import { Creator, Project, ScriptBlock, Workflow, WorkflowRun } from "@rishi/domain";
 import { TransactionManager } from "@rishi/transaction";
 import { DatabaseService } from "./index.js";
 
@@ -235,6 +237,92 @@ describe("Persistence Repositories", () => {
       // Verification that database deleted block b2
       expect(mockClient.delete).toHaveBeenCalled();
       expect(mockClient.insert).toHaveBeenCalled();
+    });
+  });
+
+  describe("DrizzleWorkflowRepository", () => {
+    it("should resolve workflow by ID", async () => {
+      const mockRow = {
+        id: "wf1",
+        workspaceId: "w1",
+        name: "Test Workflow",
+        description: "Desc",
+        triggerType: "manual",
+        definition: { nodes: [], edges: [] },
+        status: "active",
+        createdAt: new Date(),
+      };
+      const mockClient = createMockDbClient([[mockRow]]);
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleWorkflowRepository(dbService);
+
+      const workflow = await repo.findById("wf1");
+      expect(workflow).toBeInstanceOf(Workflow);
+      expect(workflow!.id).toBe("wf1");
+      expect(workflow!.name).toBe("Test Workflow");
+      expect(mockClient.select).toHaveBeenCalled();
+    });
+
+    it("should save a workflow using insert and onConflictDoUpdate", async () => {
+      const workflow = new Workflow(
+        "wf1",
+        "w1",
+        "Test Workflow",
+        "Desc",
+        "manual",
+        { nodes: [], edges: [] },
+        "active"
+      );
+      const mockClient = createMockDbClient();
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleWorkflowRepository(dbService);
+
+      await repo.save(workflow);
+      expect(mockClient.insert).toHaveBeenCalled();
+      expect(mockClient.onConflictDoUpdate).toHaveBeenCalled();
+    });
+
+    it("should delete a workflow", async () => {
+      const mockClient = createMockDbClient();
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleWorkflowRepository(dbService);
+
+      await repo.delete("wf1");
+      expect(mockClient.delete).toHaveBeenCalled();
+    });
+  });
+
+  describe("DrizzleWorkflowRunRepository", () => {
+    it("should resolve workflow run by ID", async () => {
+      const mockRow = {
+        id: "run1",
+        workflowId: "wf1",
+        workspaceId: "w1",
+        status: "PENDING",
+        state: { inputs: {}, outputs: {} },
+        startedAt: new Date(),
+        completedAt: null,
+      };
+      const mockClient = createMockDbClient([[mockRow]]);
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleWorkflowRunRepository(dbService);
+
+      const run = await repo.findById("run1");
+      expect(run).toBeInstanceOf(WorkflowRun);
+      expect(run!.id).toBe("run1");
+      expect(run!.status).toBe("PENDING");
+      expect(mockClient.select).toHaveBeenCalled();
+    });
+
+    it("should save workflow run", async () => {
+      const run = new WorkflowRun("run1", "wf1", "w1", "RUNNING", { inputs: {}, outputs: {} });
+      const mockClient = createMockDbClient();
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleWorkflowRunRepository(dbService);
+
+      await repo.save(run);
+      expect(mockClient.insert).toHaveBeenCalled();
+      expect(mockClient.onConflictDoUpdate).toHaveBeenCalled();
     });
   });
 

@@ -13,6 +13,10 @@ export type {
   WorkingContextStatus,
   ScriptBlockStatus,
   ProjectState,
+  IWorkflowNode,
+  IWorkflowEngine,
+  IWorkflow,
+  IWorkflowRun,
 } from "./entities.js";
 
 // Re-export concrete entities and aggregate roots
@@ -24,6 +28,9 @@ export {
   WorkingContext,
   ScriptBlock,
   Project,
+  WorkflowNodeType,
+  Workflow,
+  WorkflowRun,
 } from "./entities.js";
 
 // Value Objects
@@ -45,6 +52,8 @@ export type {
   IScriptBlockRepository,
   IKnowledgeSnapshotRepository,
   IProjectMemoryRepository,
+  IWorkflowRepository,
+  IWorkflowRunRepository,
 } from "./repositories.js";
 
 // Domain Events (Base interface as type, concrete classes as values)
@@ -68,4 +77,6 @@ export {
   SCRIPT_BLOCK_REPOSITORY,
   PROJECT_MEMORY_REPOSITORY,
   PROJECT_REPOSITORY,
+  WORKFLOW_REPOSITORY,
+  WORKFLOW_RUN_REPOSITORY,
 } from "./repositories.js";
