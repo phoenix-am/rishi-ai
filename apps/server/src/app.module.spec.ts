@@ -14,15 +14,25 @@ import {
   PROJECT_MEMORY_REPOSITORY,
 } from "@rishi/domain";
 import { describe, it, expect, beforeAll, vi } from "vitest";
+import { generateKeyPairSync } from "crypto";
 
 describe("AppModule Bootstrap", () => {
   beforeAll(() => {
+    // Generate valid RS256 key pair on the fly for env configuration validation
+    const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: "spki", format: "pem" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+
     // Inject required env variables for Zod validation check
     process.env.NODE_ENV = "test";
     process.env.PORT = "3000";
     process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/rishi_ai";
     process.env.PRIMARY_AI_PROVIDER = "gemini";
     process.env.AES_MASTER_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    process.env.JWT_PRIVATE_KEY = privateKey;
+    process.env.JWT_PUBLIC_KEY = publicKey;
   });
 
   it("should compile NestJS AppModule cleanly and resolve singleton providers", async () => {

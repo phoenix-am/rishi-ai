@@ -3,6 +3,7 @@ import { ConfigService } from "@rishi/config";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
+import cookie from "@fastify/cookie";
 
 /**
  * Bootstraps security plugins for Fastify: CORS, Helmet, and Rate Limiting.
@@ -63,5 +64,10 @@ export async function bootstrapSecurity(app: NestFastifyApplication): Promise<vo
         },
       };
     },
+  });
+
+  // 4. Cookie Configuration
+  await app.register(cookie, {
+    secret: configService.get("AES_MASTER_KEY"),
   });
 }

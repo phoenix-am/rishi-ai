@@ -23,12 +23,14 @@ import {
 import { DatabaseModule } from "./foundation/database/database.module.js";
 import { FoundationModule } from "./foundation/foundation.module.js";
 import { HealthModule } from "./foundation/health/health.module.js";
+import { AuthModule } from "./modules/auth/auth.module.js";
 
 @Module({
   imports: [
     DatabaseModule, // Exports Config, Logger, TransactionManager, DB client/service
     FoundationModule, // Registers Global Interceptor & Exception Filter
     HealthModule, // Health checks endpoint
+    AuthModule,
   ],
   providers: [
     // Repository Implementations (Singleton dependency inversion adapters)

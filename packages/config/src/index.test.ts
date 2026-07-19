@@ -13,6 +13,8 @@ describe("Config Module", () => {
     process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/rishi_ai";
     process.env.PRIMARY_AI_PROVIDER = "gemini";
     process.env.AES_MASTER_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    process.env.JWT_PRIVATE_KEY = "mock-private-key";
+    process.env.JWT_PUBLIC_KEY = "mock-public-key";
   });
 
   it("should successfully parse and validate a correct environment config", () => {
@@ -23,6 +25,8 @@ describe("Config Module", () => {
       PRIMARY_AI_PROVIDER: "gemini",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
+      JWT_PRIVATE_KEY: "mock-private-key",
+      JWT_PUBLIC_KEY: "mock-public-key",
     };
     const parsed = initializeConfig(validEnv);
     expect(parsed.PORT).toBe(3000);
@@ -38,6 +42,8 @@ describe("Config Module", () => {
       PRIMARY_AI_PROVIDER: "gemini",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
+      JWT_PRIVATE_KEY: "mock-private-key",
+      JWT_PUBLIC_KEY: "mock-public-key",
     };
     expect(() => initializeConfig(invalidEnv)).toThrow(ConfigurationValidationError);
   });
@@ -57,6 +63,8 @@ describe("Config Module", () => {
       PRIMARY_AI_PROVIDER: "gemini",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
+      JWT_PRIVATE_KEY: "mock-private-key",
+      JWT_PUBLIC_KEY: "mock-public-key",
     };
     // Should safely return the same config
     const first = initializeConfig(validEnv);
@@ -71,6 +79,8 @@ describe("Config Module", () => {
       PRIMARY_AI_PROVIDER: "gemini",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "debug",
+      JWT_PRIVATE_KEY: "mock-private-key",
+      JWT_PUBLIC_KEY: "mock-public-key",
     };
     expect(() => initializeConfig(conflictingEnv)).toThrow(
       /Configuration has already been initialized/
@@ -85,6 +95,8 @@ describe("Config Module", () => {
       PRIMARY_AI_PROVIDER: "gemini",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "info",
+      JWT_PRIVATE_KEY: "mock-private-key",
+      JWT_PUBLIC_KEY: "mock-public-key",
     };
     const configService = new ConfigService(customEnv);
     expect(configService.get("PORT")).toBe(5000);

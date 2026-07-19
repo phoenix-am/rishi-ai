@@ -13,14 +13,24 @@ import {
 } from "./index.js";
 import { ConfigService } from "@rishi/config";
 import { TransactionManager } from "@rishi/transaction";
+import { generateKeyPairSync } from "crypto";
 
 describe("Database Module", () => {
+  // Generate valid RS256 key pair on the fly for config validation
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  });
+
   const mockConfig = new ConfigService({
     NODE_ENV: "test",
     PORT: "3000",
     DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
     AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     LOG_LEVEL: "info",
+    JWT_PRIVATE_KEY: privateKey,
+    JWT_PUBLIC_KEY: publicKey,
   });
 
   it("should define and export identity and multi-tenancy schemas and relations", () => {

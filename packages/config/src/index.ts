@@ -15,6 +15,8 @@ export const envSchema = z.object({
   ALLOWED_ORIGINS: z.string().default("*"),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   BODY_LIMIT_BYTES: z.coerce.number().default(1048576),
+  JWT_PRIVATE_KEY: z.string().min(1),
+  JWT_PUBLIC_KEY: z.string().min(1),
 });
 
 /**
