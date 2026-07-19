@@ -5,6 +5,8 @@ import {
   ScriptBlock,
   KnowledgeSnapshot,
   ProjectMemory,
+  Workflow,
+  WorkflowRun,
 } from "./entities.js";
 
 export const CREATOR_REPOSITORY = Symbol.for("CreatorRepository");
@@ -13,6 +15,8 @@ export const KNOWLEDGE_SNAPSHOT_REPOSITORY = Symbol.for("KnowledgeSnapshotReposi
 export const SCRIPT_BLOCK_REPOSITORY = Symbol.for("ScriptBlockRepository");
 export const PROJECT_MEMORY_REPOSITORY = Symbol.for("ProjectMemoryRepository");
 export const PROJECT_REPOSITORY = Symbol.for("ProjectRepository");
+export const WORKFLOW_REPOSITORY = Symbol.for("WorkflowRepository");
+export const WORKFLOW_RUN_REPOSITORY = Symbol.for("WorkflowRunRepository");
 
 /**
  * Interface contract for Creator persistence operations.
@@ -137,4 +141,49 @@ export interface IProjectMemoryRepository {
    * Persists a new memory log entry.
    */
   save(memory: ProjectMemory): Promise<void>;
+}
+
+/**
+ * Interface contract for Workflow persistence.
+ */
+export interface IWorkflowRepository {
+  /**
+   * Resolves a workflow by ID.
+   */
+  findById(id: string): Promise<Workflow | null>;
+
+  /**
+   * Saves a workflow (insert or update).
+   */
+  save(workflow: Workflow): Promise<void>;
+
+  /**
+   * Deletes a workflow by ID.
+   */
+  delete(id: string): Promise<void>;
+
+  /**
+   * Checks if a workflow exists.
+   */
+  exists(id: string): Promise<boolean>;
+}
+
+/**
+ * Interface contract for WorkflowRun persistence.
+ */
+export interface IWorkflowRunRepository {
+  /**
+   * Resolves a workflow run by ID.
+   */
+  findById(id: string): Promise<WorkflowRun | null>;
+
+  /**
+   * Saves a workflow run state.
+   */
+  save(run: WorkflowRun): Promise<void>;
+
+  /**
+   * Checks if a workflow run exists.
+   */
+  exists(id: string): Promise<boolean>;
 }

@@ -873,3 +873,236 @@ export class Project implements IProject {
     }
   }
 }
+
+/**
+ * Enums representing the supported types of workflow nodes.
+ */
+export enum WorkflowNodeType {
+  LLM_PROMPT = "LLM_PROMPT",
+  TEXT_TO_SPEECH = "TEXT_TO_SPEECH",
+  MERGE_VIDEO = "MERGE_VIDEO",
+}
+
+/**
+ * Interface contract for a single node inside a workflow definition graph.
+ */
+export interface IWorkflowNode {
+  readonly id: string;
+  readonly type: WorkflowNodeType | string;
+  readonly name: string;
+  readonly config: Record<string, any>;
+  readonly nextNodeIds: string[];
+}
+
+/**
+ * Abstract interface for the workflow execution engine.
+ */
+export interface IWorkflowEngine {
+  execute(run: IWorkflowRun): Promise<void>;
+}
+
+/**
+ * Core interface for a Workflow definition.
+ */
+export interface IWorkflow {
+  readonly id: string;
+  readonly workspaceId: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly triggerType: string;
+  readonly definition: {
+    nodes: IWorkflowNode[];
+    edges: Array<{ from: string; to: string }>;
+  };
+  readonly status: string;
+  readonly createdAt: Date;
+}
+
+/**
+ * Core interface for a Workflow Run execution instance.
+ */
+export interface IWorkflowRun {
+  readonly id: string;
+  readonly workflowId: string;
+  readonly workspaceId: string;
+  readonly status: string;
+  readonly state: {
+    inputs: Record<string, any>;
+    outputs: Record<string, any>;
+    [key: string]: any;
+  };
+  readonly startedAt: Date;
+  readonly completedAt: Date | null;
+}
+
+/**
+ * Domain entity representing a Workflow graph definition.
+ */
+export class Workflow implements IWorkflow {
+  public readonly id: string;
+  public readonly workspaceId: string;
+  public readonly name: string;
+  public readonly description: string | null;
+  public readonly triggerType: string;
+  public readonly definition: {
+    nodes: IWorkflowNode[];
+    edges: Array<{ from: string; to: string }>;
+  };
+  public readonly status: string;
+  public readonly createdAt: Date;
+
+  constructor(
+    id: string,
+    workspaceId: string,
+    name: string,
+    description: string | null,
+    triggerType: string,
+    definition: { nodes: IWorkflowNode[]; edges: Array<{ from: string; to: string }> },
+    status: string = "draft",
+    createdAt: Date = new Date()
+  ) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new ValidationException("Workflow ID must be a non-empty string.");
+    }
+    if (!workspaceId || typeof workspaceId !== "string" || workspaceId.trim() === "") {
+      throw new ValidationException("Workspace ID must be a non-empty string.");
+    }
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      throw new ValidationException("Workflow Name must be a non-empty string.");
+    }
+    if (!triggerType || typeof triggerType !== "string" || triggerType.trim() === "") {
+      throw new ValidationException("Workflow Trigger Type must be a non-empty string.");
+    }
+    if (!definition || typeof definition !== "object") {
+      throw new ValidationException("Workflow Definition must be a valid object.");
+    }
+    if (!Array.isArray(definition.nodes)) {
+      throw new ValidationException("Workflow definition must contain a list of nodes.");
+    }
+    if (!Array.isArray(definition.edges)) {
+      throw new ValidationException("Workflow definition must contain a list of edges.");
+    }
+    if (!status || typeof status !== "string" || status.trim() === "") {
+      throw new ValidationException("Workflow Status must be a non-empty string.");
+    }
+
+    this.id = id;
+    this.workspaceId = workspaceId;
+    this.name = name.trim();
+    this.description = description ? description.trim() : null;
+    this.triggerType = triggerType.trim();
+    this.definition = definition;
+    this.status = status.trim();
+    this.createdAt = createdAt;
+  }
+}
+
+/**
+ * Domain entity representing an execution instance of a Workflow.
+ */
+export class WorkflowRun implements IWorkflowRun {
+  public readonly id: string;
+  public readonly workflowId: string;
+  public readonly workspaceId: string;
+  private _status: string;
+  private _state: {
+    inputs: Record<string, any>;
+    outputs: Record<string, any>;
+    [key: string]: any;
+  };
+  public readonly startedAt: Date;
+  private _completedAt: Date | null;
+
+  constructor(
+    id: string,
+    workflowId: string,
+    workspaceId: string,
+    status: string = "PENDING",
+    state: { inputs: Record<string, any>; outputs: Record<string, any>; [key: string]: any } = {
+      inputs: {},
+      outputs: {},
+    },
+    startedAt: Date = new Date(),
+    completedAt: Date | null = null
+  ) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new ValidationException("WorkflowRun ID must be a non-empty string.");
+    }
+    if (!workflowId || typeof workflowId !== "string" || workflowId.trim() === "") {
+      throw new ValidationException("Workflow ID must be a non-empty string.");
+    }
+    if (!workspaceId || typeof workspaceId !== "string" || workspaceId.trim() === "") {
+      throw new ValidationException("Workspace ID must be a non-empty string.");
+    }
+    if (!status || typeof status !== "string" || status.trim() === "") {
+      throw new ValidationException("WorkflowRun Status must be a non-empty string.");
+    }
+    if (!state || typeof state !== "object" || !state.inputs || !state.outputs) {
+      throw new ValidationException("WorkflowRun State must be an object with inputs and outputs.");
+    }
+
+    this.id = id;
+    this.workflowId = workflowId;
+    this.workspaceId = workspaceId;
+    this._status = status.trim();
+    this._state = state;
+    this.startedAt = startedAt;
+    this._completedAt = completedAt;
+  }
+
+  public get status(): string {
+    return this._status;
+  }
+
+  public get state(): {
+    inputs: Record<string, any>;
+    outputs: Record<string, any>;
+    [key: string]: any;
+  } {
+    return this._state;
+  }
+
+  public get completedAt(): Date | null {
+    return this._completedAt;
+  }
+
+  /**
+   * Transition the workflow run status to RUNNING.
+   */
+  public start(): void {
+    if (this._status !== "PENDING") {
+      throw new InvalidStateTransitionException("WorkflowRun", this.id, this._status, "RUNNING");
+    }
+    this._status = "RUNNING";
+  }
+
+  /**
+   * Transition the workflow run status to COMPLETED and save outputs.
+   */
+  public complete(outputs: Record<string, any>): void {
+    if (this._status !== "RUNNING") {
+      throw new InvalidStateTransitionException("WorkflowRun", this.id, this._status, "COMPLETED");
+    }
+    this._status = "COMPLETED";
+    this._state = {
+      ...this._state,
+      outputs,
+    };
+    this._completedAt = new Date();
+  }
+
+  /**
+   * Transition the workflow run status to FAILED and record final failure state.
+   */
+  public fail(outputs: Record<string, any>): void {
+    if (this._status !== "RUNNING" && this._status !== "PENDING") {
+      throw new InvalidStateTransitionException("WorkflowRun", this.id, this._status, "FAILED");
+    }
+    this._status = "FAILED";
+    this._state = {
+      ...this._state,
+      outputs,
+    };
+    this._completedAt = new Date();
+  }
+}

@@ -14,6 +14,9 @@ import {
   ScriptBlock,
   Project,
   ProjectWorkflowService,
+  Workflow,
+  WorkflowRun,
+  WorkflowNodeType,
 } from "./index.js";
 
 describe("Domain Exceptions", () => {
@@ -330,5 +333,110 @@ describe("ProjectWorkflowService (Domain Service)", () => {
 
     const driftDetected = service.detectContextDrift(project, activeAssetVersions, "tx1");
     expect(driftDetected).toBe(false);
+  });
+});
+
+describe("Workflow and WorkflowRun Entities", () => {
+  const dummyDefinition = {
+    nodes: [
+      {
+        id: "node-1",
+        type: WorkflowNodeType.LLM_PROMPT,
+        name: "Generate Outline",
+        config: { model: "gemini-1.5" },
+        nextNodeIds: ["node-2"],
+      },
+      {
+        id: "node-2",
+        type: WorkflowNodeType.TEXT_TO_SPEECH,
+        name: "Generate Audio",
+        config: { voice: "male-1" },
+        nextNodeIds: [],
+      },
+    ],
+    edges: [{ from: "node-1", to: "node-2" }],
+  };
+
+  describe("Workflow Entity", () => {
+    it("should successfully construct a Workflow with valid properties", () => {
+      const workflow = new Workflow(
+        "wf-1",
+        "ws-1",
+        "Content Pipeline",
+        "Generate automated scripts and audio",
+        "manual",
+        dummyDefinition,
+        "active"
+      );
+
+      expect(workflow.id).toBe("wf-1");
+      expect(workflow.workspaceId).toBe("ws-1");
+      expect(workflow.name).toBe("Content Pipeline");
+      expect(workflow.description).toBe("Generate automated scripts and audio");
+      expect(workflow.triggerType).toBe("manual");
+      expect(workflow.definition.nodes.length).toBe(2);
+      expect(workflow.status).toBe("active");
+    });
+
+    it("should throw ValidationException on invalid properties", () => {
+      expect(() => new Workflow("", "ws-1", "Name", null, "manual", dummyDefinition)).toThrow(
+        ValidationException
+      );
+      expect(() => new Workflow("wf-1", "", "Name", null, "manual", dummyDefinition)).toThrow(
+        ValidationException
+      );
+      expect(() => new Workflow("wf-1", "ws-1", "", null, "manual", dummyDefinition)).toThrow(
+        ValidationException
+      );
+      expect(() => new Workflow("wf-1", "ws-1", "Name", null, "", dummyDefinition)).toThrow(
+        ValidationException
+      );
+      expect(() => new Workflow("wf-1", "ws-1", "Name", null, "manual", null as any)).toThrow(
+        ValidationException
+      );
+    });
+  });
+
+  describe("WorkflowRun Entity", () => {
+    it("should construct in PENDING status by default", () => {
+      const run = new WorkflowRun("run-1", "wf-1", "ws-1");
+      expect(run.id).toBe("run-1");
+      expect(run.workflowId).toBe("wf-1");
+      expect(run.workspaceId).toBe("ws-1");
+      expect(run.status).toBe("PENDING");
+      expect(run.state.inputs).toEqual({});
+      expect(run.state.outputs).toEqual({});
+    });
+
+    it("should transition status from PENDING to RUNNING", () => {
+      const run = new WorkflowRun("run-1", "wf-1", "ws-1");
+      run.start();
+      expect(run.status).toBe("RUNNING");
+    });
+
+    it("should fail to start if not PENDING", () => {
+      const run = new WorkflowRun("run-1", "wf-1", "ws-1", "RUNNING");
+      expect(() => run.start()).toThrow(InvalidStateTransitionException);
+    });
+
+    it("should transition status from RUNNING to COMPLETED and store outputs", () => {
+      const run = new WorkflowRun("run-1", "wf-1", "ws-1", "RUNNING");
+      run.complete({ audioUrl: "https://rishi.ai/audio.mp3" });
+      expect(run.status).toBe("COMPLETED");
+      expect(run.state.outputs).toEqual({ audioUrl: "https://rishi.ai/audio.mp3" });
+      expect(run.completedAt).toBeInstanceOf(Date);
+    });
+
+    it("should transition status to FAILED from RUNNING or PENDING", () => {
+      const run = new WorkflowRun("run-1", "wf-1", "ws-1", "PENDING");
+      run.fail({ error: "Missing input" });
+      expect(run.status).toBe("FAILED");
+      expect(run.state.outputs).toEqual({ error: "Missing input" });
+
+      const run2 = new WorkflowRun("run-2", "wf-1", "ws-1", "RUNNING");
+      run2.fail({ error: "API Timeout" });
+      expect(run2.status).toBe("FAILED");
+      expect(run2.state.outputs).toEqual({ error: "API Timeout" });
+    });
   });
 });
