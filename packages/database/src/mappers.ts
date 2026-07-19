@@ -7,6 +7,8 @@ import {
   ScriptBlock,
   Project,
   ProjectState,
+  Workflow,
+  WorkflowRun,
 } from "@rishi/domain";
 
 /**
@@ -240,6 +242,77 @@ export const ProjectMapper = {
       deletedAt: entity.deletedAt,
       previousState: entity.previousState,
       hasStateDrift: entity.hasStateDrift,
+    };
+  },
+};
+
+export const WorkflowMapper = {
+  toDomain(row: {
+    id: string;
+    workspaceId: string;
+    name: string;
+    description: string | null;
+    triggerType: string;
+    definition: any;
+    status: string;
+    createdAt: Date;
+  }): Workflow {
+    return new Workflow(
+      row.id,
+      row.workspaceId,
+      row.name,
+      row.description,
+      row.triggerType,
+      row.definition,
+      row.status,
+      row.createdAt
+    );
+  },
+
+  toPersistence(entity: Workflow) {
+    return {
+      id: entity.id,
+      workspaceId: entity.workspaceId,
+      name: entity.name,
+      description: entity.description,
+      triggerType: entity.triggerType,
+      definition: entity.definition,
+      status: entity.status,
+      createdAt: entity.createdAt,
+    };
+  },
+};
+
+export const WorkflowRunMapper = {
+  toDomain(row: {
+    id: string;
+    workflowId: string;
+    workspaceId: string;
+    status: string;
+    state: any;
+    startedAt: Date;
+    completedAt: Date | null;
+  }): WorkflowRun {
+    return new WorkflowRun(
+      row.id,
+      row.workflowId,
+      row.workspaceId,
+      row.status,
+      row.state,
+      row.startedAt,
+      row.completedAt
+    );
+  },
+
+  toPersistence(entity: WorkflowRun) {
+    return {
+      id: entity.id,
+      workflowId: entity.workflowId,
+      workspaceId: entity.workspaceId,
+      status: entity.status,
+      state: entity.state,
+      startedAt: entity.startedAt,
+      completedAt: entity.completedAt,
     };
   },
 };

@@ -203,3 +203,55 @@ export const creatorsRelations = relations(creators, ({ one }) => ({
     references: [workspaces.id],
   }),
 }));
+
+/**
+ * Database schema for Workflows.
+ */
+export const workflows = pgTable("workflows", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
+    .notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  triggerType: text("trigger_type").notNull(),
+  definition: jsonb("definition").$type<any>().notNull(),
+  status: text("status").notNull().default("draft"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+/**
+ * Database schema for Workflow Runs.
+ */
+export const workflowRuns = pgTable("workflow_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workflowId: uuid("workflow_id")
+    .references(() => workflows.id, { onDelete: "cascade" })
+    .notNull(),
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
+    .notNull(),
+  status: text("status").notNull().default("PENDING"),
+  state: jsonb("state").$type<any>().notNull().default({ inputs: {}, outputs: {} }),
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const workflowsRelations = relations(workflows, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [workflows.workspaceId],
+    references: [workspaces.id],
+  }),
+  workflowRuns: many(workflowRuns),
+}));
+
+export const workflowRunsRelations = relations(workflowRuns, ({ one }) => ({
+  workflow: one(workflows, {
+    fields: [workflowRuns.workflowId],
+    references: [workflows.id],
+  }),
+  workspace: one(workspaces, {
+    fields: [workflowRuns.workspaceId],
+    references: [workspaces.id],
+  }),
+}));

@@ -111,6 +111,10 @@ export {
   workspaceMembersRelations,
   sessionsRelations,
   creatorsRelations,
+  workflows,
+  workflowRuns,
+  workflowsRelations,
+  workflowRunsRelations,
 } from "./schema/index.js";
 
 // Re-export Mappers
@@ -121,6 +125,8 @@ export {
   BlockMapper,
   MemoryMapper,
   ProjectMapper,
+  WorkflowMapper,
+  WorkflowRunMapper,
 } from "./mappers.js";
 
 // Re-export Repository implementations
@@ -129,6 +135,8 @@ export { DrizzleKnowledgeAssetRepository } from "./repositories/asset.js";
 export { DrizzleKnowledgeSnapshotRepository } from "./repositories/snapshot.js";
 export { DrizzleScriptBlockRepository } from "./repositories/block.js";
 export { DrizzleProjectMemoryRepository } from "./repositories/memory.js";
+export { DrizzleWorkflowRepository } from "./repositories/workflow.js";
+export { DrizzleWorkflowRunRepository } from "./repositories/workflow-run.js";
 export {
   DrizzleProjectRepository,
   PersistenceException,
