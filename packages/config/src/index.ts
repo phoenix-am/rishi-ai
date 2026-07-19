@@ -17,6 +17,7 @@ export const envSchema = z.object({
   BODY_LIMIT_BYTES: z.coerce.number().default(1048576),
   JWT_PRIVATE_KEY: z.string().min(1),
   JWT_PUBLIC_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().optional(),
 });
 
 /**
