@@ -3,6 +3,7 @@ import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify
 import { AppModule } from "./app.module.js";
 import { ConfigService, ConfigurationValidationError } from "@rishi/config";
 import type { ILogger } from "@rishi/logger";
+import { ValidationPipe } from "@nestjs/common";
 
 // Import modularized bootstrap functions
 import { bootstrapFastify } from "./foundation/bootstrap/bootstrap-fastify.js";
@@ -36,6 +37,9 @@ async function bootstrap() {
 
   // 1. Configure routing global prefixing and URI versioning
   bootstrapVersioning(app);
+
+  // 1.5. Enable global payload validation and transform mapping
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   // 2. Configure Fastify engine details (Correlation ID propagation + structured request logging)
   bootstrapFastify(app);

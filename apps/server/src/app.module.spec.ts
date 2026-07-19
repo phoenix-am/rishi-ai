@@ -13,7 +13,7 @@ import {
   SCRIPT_BLOCK_REPOSITORY,
   PROJECT_MEMORY_REPOSITORY,
 } from "@rishi/domain";
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import { generateKeyPairSync } from "crypto";
 
 describe("AppModule Bootstrap", () => {
@@ -35,10 +35,46 @@ describe("AppModule Bootstrap", () => {
     process.env.JWT_PUBLIC_KEY = publicKey;
   });
 
+  let appsToClose: NestFastifyApplication[] = [];
+  let modulesToClose: any[] = [];
+
+  afterEach(async () => {
+    for (const app of appsToClose) {
+      try {
+        const dbService = app.get(DatabaseService);
+        await dbService.close();
+      } catch {
+        // Ignore error
+      }
+      try {
+        await app.close();
+      } catch {
+        // Ignore error
+      }
+    }
+    appsToClose = [];
+
+    for (const moduleRef of modulesToClose) {
+      try {
+        const dbService = moduleRef.get(DatabaseService);
+        await dbService.close();
+      } catch {
+        // Ignore error
+      }
+      try {
+        await moduleRef.close();
+      } catch {
+        // Ignore error
+      }
+    }
+    modulesToClose = [];
+  });
+
   it("should compile NestJS AppModule cleanly and resolve singleton providers", async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+    modulesToClose.push(moduleRef);
 
     // 1. Config Service
     const config = moduleRef.get<ConfigService>(ConfigService);
@@ -77,8 +113,10 @@ describe("AppModule Bootstrap", () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+    modulesToClose.push(moduleRef);
 
     const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    appsToClose.push(app);
     const dbService = app.get(DatabaseService);
 
     // Mock successful database ping
@@ -86,16 +124,16 @@ describe("AppModule Bootstrap", () => {
 
     await expect(app.init()).resolves.not.toThrow();
     expect(pingSpy).toHaveBeenCalledTimes(1);
-
-    await app.close();
   });
 
   it("should fail fast and throw initialization error when database connection is dead during startup", async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+    modulesToClose.push(moduleRef);
 
     const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    appsToClose.push(app);
     const dbService = app.get(DatabaseService);
 
     // Mock failed database ping
@@ -105,7 +143,5 @@ describe("AppModule Bootstrap", () => {
       "Database startup check failed. Verify connection settings and availability."
     );
     expect(pingSpy).toHaveBeenCalledTimes(1);
-
-    await app.close();
   });
 });

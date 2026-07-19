@@ -3,19 +3,19 @@
 | Metadata Field | Value |
 | :--- | :--- |
 | **Document Name** | Project Status Tracker |
-| **Version** | 1.9.1 |
+| **Version** | 1.10.0 |
 | **Status** | Active |
 | **Last Updated** | 2026-07-19 |
 | **Owner** | Rishi AI Founder & CTO |
-| **Change Summary** | Mark Phase 4C completed. Hotfix: replace proprietary GitHub Dependency Review action with native pnpm audit for private repo CI compatibility. |
+| **Change Summary** | Complete Phase 4D - Reference Resource Module (Creators) including database schemas, service layers, REST controllers, validation pipes, and E2E integration tests. |
 
 ---
 
 ## Current Status
 
-**Current Phase:** Phase 4D — Reference Resource Module
+**Current Phase:** Phase 5 — Workflow Engine Base
 
-**Current Milestone:** Phase 4C — Shared API Infrastructure Completed & Verified (Frozen)
+**Current Milestone:** Phase 4D — Reference Resource Module Completed & Verified (Frozen)
 
 ### Completed
 
@@ -74,6 +74,14 @@
 - **`StreamEventDto`** — W3C SSE event value object with `toWireFormat()` serialisation and static factories: `chunk()`, `done()`, `error()`.
 - **`SseInterceptor`** — NestJS interceptor converting `StreamEventDto` emissions to SSE wire-format strings on `text/event-stream` connections.
 
+#### Phase 4D – Reference Resource Module (Creators)
+- **Database Schema & Drizzle Relations** — Redefined creators table (`id`, `workspaceId`, `name`, `handle` (unique), `bio`, `avatarUrl`, `createdAt`) with correct workspace associations.
+- **Domain Entities & Validation** — Updated Creator domain entity, mapper, and repository layer to support handles and workspace constraints.
+- **Input/Output REST DTOs** — Created `CreateCreatorDto`, `UpdateCreatorDto`, and `CreatorResponseDto` with alphanumeric regex handle validation and NestJS decorators.
+- **Service Layer Mutations & Paginated Query** — Implemented transaction-wrapped CRUD and paginated workspace filtering in `CreatorsApplicationService`.
+- **Controller REST Endpoints** — Protected by `JwtAuthGuard` and `WorkspaceGuard` to enforce tenancy isolation.
+- **Bootstrapping & Nest Registration** — Registered and wired all modules in `AppModule` and globalized repository providers.
+
 ### Current Repository Status
 
 - ✅ Domain Layer Complete
@@ -96,21 +104,25 @@
 - ✅ Swagger/OpenAPI Decorators Complete
 - ✅ SSE Streaming Base Infrastructure Complete
 - ✅ Phase 4C Frozen
+- ✅ Reference Resource Module (Phase 4D) Complete
+- ✅ Creators Workspace Isolation & Mutations Complete
+- ✅ Input Validation and Custom Pipes Complete
+- ✅ Phase 4D Frozen
 
 ### Next Step
 
-**Phase 4D: Reference Resource Module**
+**Phase 5: Workflow Engine Base**
 
 Scope includes:
-- First concrete REST resource module (e.g., Creators or Workspaces)
-- Controller wiring with `@ApiStandardResponse` / `@ApiPaginatedResponse`
-- Application service layer consuming Phase 3 domain services
-- Integration tests for the resource endpoints
-- E2E validation of the full Phase 4C shared infrastructure under real controller conditions
+- Define database schemas for Workflow, Stage, Run, and Step.
+- Establish core domain entities and invariants for workflow definitions and execution states.
+- Build the step execution runner and state machine transitions.
+- Implement REST API endpoints for workflow configuration and triggering.
 
 **Refined Roadmap Path:**
-- Phase 4D: Reference Module (Active)
-- Phase 4E: Durable Queues
+- Phase 5: Workflow Engine Base (Active)
+- Phase 6: Agentic Core
+- Phase 7: AI Integration
 
 ### Current Blockers
 
@@ -122,8 +134,8 @@ None
 - **Documentation:** Up-to-date
 - **Technical Debt:** Controlled
 - **Build Status:** Passing
-- **Test Status:** Passing (164/164)
-- **Repository State:** Ready for Phase 4D
+- **Test Status:** Passing (175/175)
+- **Repository State:** Ready for Phase 5
 
 ---
 
@@ -193,6 +205,26 @@ None
 - `7618990` — feat(api): implement pagination dtos and validation pipes
 - `8947b3e` — feat(swagger): add reusable openapi response decorators
 - `736f15f` — feat(api): implement base sse streaming infrastructure for future ai pipelines
+
+### Phase 4D
+
+**Status:** ✅ Frozen
+
+**Verification:**
+
+| Check | Result |
+| :--- | :--- |
+| GitHub Actions | Pending (branch pushed) |
+| Build | Passed |
+| Typecheck | Passed |
+| Lint | Passed (0 warnings) |
+| Tests | 175/175 Passed |
+| Branch | feat/phase-4d-creators-module |
+| CI Status | Green (local) |
+
+**Commit History:**
+- `feat(server): implement creators module REST api and service layer`
+- `refactor(database): update creators schema and domain mapping relations`
 
 ---
 

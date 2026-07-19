@@ -1,7 +1,5 @@
 import {
   Creator,
-  Email,
-  CreatorStatus,
   KnowledgeAsset,
   KnowledgeAssetStatus,
   KnowledgeSnapshot,
@@ -16,15 +14,34 @@ import {
  */
 
 export const CreatorMapper = {
-  toDomain(row: { id: string; email: string; status: string; createdAt: Date }): Creator {
-    return new Creator(row.id, new Email(row.email), row.status as CreatorStatus, row.createdAt);
+  toDomain(row: {
+    id: string;
+    workspaceId: string;
+    name: string;
+    handle: string;
+    bio: string | null;
+    avatarUrl: string | null;
+    createdAt: Date;
+  }): Creator {
+    return new Creator(
+      row.id,
+      row.workspaceId,
+      row.name,
+      row.handle,
+      row.bio,
+      row.avatarUrl,
+      row.createdAt
+    );
   },
 
   toPersistence(entity: Creator) {
     return {
       id: entity.id,
-      email: entity.email,
-      status: entity.status,
+      workspaceId: entity.workspaceId,
+      name: entity.name,
+      handle: entity.handle,
+      bio: entity.bio,
+      avatarUrl: entity.avatarUrl,
       createdAt: entity.createdAt,
     };
   },

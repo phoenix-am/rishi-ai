@@ -1,4 +1,3 @@
-import { Email } from "./value-objects.js";
 import { InvalidStateTransitionException, ValidationException } from "./exceptions.js";
 import {
   IDomainEvent,
@@ -12,7 +11,11 @@ import {
  */
 export interface ICreator {
   readonly id: string;
-  readonly email: string;
+  readonly workspaceId: string;
+  readonly name: string;
+  readonly handle: string;
+  readonly bio: string | null;
+  readonly avatarUrl: string | null;
   readonly createdAt: Date;
 }
 
@@ -42,80 +45,45 @@ export interface IScriptBlock {
 }
 
 /**
- * Creator state enum representation.
- */
-export type CreatorStatus = "active" | "suspended" | "deleted";
-
-/**
- * Tenant root entity encapsulating creator details and state constraints.
+ * Business resource entity encapsulating creator details.
  */
 export class Creator implements ICreator {
   public readonly id: string;
-  private readonly _email: Email;
-  private _status: CreatorStatus;
+  public readonly workspaceId: string;
+  public readonly name: string;
+  public readonly handle: string;
+  public readonly bio: string | null;
+  public readonly avatarUrl: string | null;
   public readonly createdAt: Date;
 
   constructor(
     id: string,
-    email: Email,
-    status: CreatorStatus = "active",
+    workspaceId: string,
+    name: string,
+    handle: string,
+    bio: string | null = null,
+    avatarUrl: string | null = null,
     createdAt: Date = new Date()
   ) {
-    if (!id || typeof id !== "string") {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       throw new ValidationException("Creator ID must be a non-empty string.");
     }
+    if (!workspaceId || typeof workspaceId !== "string" || workspaceId.trim() === "") {
+      throw new ValidationException("Workspace ID must be a non-empty string.");
+    }
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      throw new ValidationException("Creator Name must be a non-empty string.");
+    }
+    if (!handle || typeof handle !== "string" || handle.trim() === "") {
+      throw new ValidationException("Creator Handle must be a non-empty string.");
+    }
     this.id = id;
-    this._email = email;
-    this._status = status;
+    this.workspaceId = workspaceId;
+    this.name = name.trim();
+    this.handle = handle.trim().toLowerCase();
+    this.bio = bio ? bio.trim() : null;
+    this.avatarUrl = avatarUrl ? avatarUrl.trim() : null;
     this.createdAt = createdAt;
-  }
-
-  /**
-   * Satisfies ICreator interface by returning string representation of Email value object.
-   */
-  public get email(): string {
-    return this._email.getValue();
-  }
-
-  /**
-   * Exposes the rich Email value object.
-   */
-  public get emailVO(): Email {
-    return this._email;
-  }
-
-  /**
-   * Retrieves the current status of the creator.
-   */
-  public get status(): CreatorStatus {
-    return this._status;
-  }
-
-  /**
-   * Activates the creator account if not deleted.
-   */
-  public activate(): void {
-    if (this._status === "deleted") {
-      throw new InvalidStateTransitionException("Creator", this.id, this._status, "active");
-    }
-    this._status = "active";
-  }
-
-  /**
-   * Suspends the creator account if not deleted.
-   */
-  public suspend(): void {
-    if (this._status === "deleted") {
-      throw new InvalidStateTransitionException("Creator", this.id, this._status, "suspended");
-    }
-    this._status = "suspended";
-  }
-
-  /**
-   * Marks the creator account as deleted.
-   */
-  public markAsDeleted(): void {
-    this._status = "deleted";
   }
 }
 

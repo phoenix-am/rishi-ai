@@ -9,7 +9,6 @@ export type {
   ICreator,
   IProject,
   IScriptBlock,
-  CreatorStatus,
   KnowledgeAssetStatus,
   WorkingContextStatus,
   ScriptBlockStatus,
