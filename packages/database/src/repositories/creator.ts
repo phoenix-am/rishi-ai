@@ -2,7 +2,7 @@ import { ICreatorRepository, Creator } from "@rishi/domain";
 import { DatabaseService } from "../index.js";
 import { creators } from "../schema/index.js";
 import { CreatorMapper } from "../mappers.js";
-import { eq, and, ne } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 /**
  * Creator persistence adapter using Drizzle PostgreSQL client.
@@ -11,35 +11,29 @@ export class DrizzleCreatorRepository implements ICreatorRepository {
   constructor(private readonly dbService: DatabaseService) {}
 
   /**
-   * Resolves creator by ID, filtering out deleted status by default.
+   * Resolves creator by ID.
    */
-  public async findById(
-    id: string,
-    options?: { includeDeleted?: boolean }
-  ): Promise<Creator | null> {
-    const filter = options?.includeDeleted
-      ? eq(creators.id, id)
-      : and(eq(creators.id, id), ne(creators.status, "deleted"));
-
-    const rows = await this.dbService.client.select().from(creators).where(filter).limit(1);
+  public async findById(id: string): Promise<Creator | null> {
+    const rows = await this.dbService.client
+      .select()
+      .from(creators)
+      .where(eq(creators.id, id))
+      .limit(1);
 
     if (rows.length === 0) return null;
     return CreatorMapper.toDomain(rows[0]!);
   }
 
   /**
-   * Resolves creator by unique email, filtering out deleted status by default.
+   * Resolves creator by unique handle.
    */
-  public async findByEmail(
-    email: string,
-    options?: { includeDeleted?: boolean }
-  ): Promise<Creator | null> {
-    const normalized = email.trim().toLowerCase();
-    const filter = options?.includeDeleted
-      ? eq(creators.email, normalized)
-      : and(eq(creators.email, normalized), ne(creators.status, "deleted"));
-
-    const rows = await this.dbService.client.select().from(creators).where(filter).limit(1);
+  public async findByHandle(handle: string): Promise<Creator | null> {
+    const normalized = handle.trim().toLowerCase();
+    const rows = await this.dbService.client
+      .select()
+      .from(creators)
+      .where(eq(creators.handle, normalized))
+      .limit(1);
 
     if (rows.length === 0) return null;
     return CreatorMapper.toDomain(rows[0]!);
@@ -56,20 +50,23 @@ export class DrizzleCreatorRepository implements ICreatorRepository {
       .onConflictDoUpdate({
         target: creators.id,
         set: {
-          email: data.email,
-          status: data.status,
+          workspaceId: data.workspaceId,
+          name: data.name,
+          handle: data.handle,
+          bio: data.bio,
+          avatarUrl: data.avatarUrl,
         },
       });
   }
 
   /**
-   * Checks if an active creator exists.
+   * Checks if creator exists.
    */
   public async exists(id: string): Promise<boolean> {
     const rows = await this.dbService.client
       .select({ id: creators.id })
       .from(creators)
-      .where(and(eq(creators.id, id), ne(creators.status, "deleted")))
+      .where(eq(creators.id, id))
       .limit(1);
 
     return rows.length > 0;

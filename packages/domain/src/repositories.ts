@@ -24,9 +24,9 @@ export interface ICreatorRepository {
   findById(id: string): Promise<Creator | null>;
 
   /**
-   * Resolves a creator by their unique email address.
+   * Resolves a creator by their unique handle.
    */
-  findByEmail(email: string): Promise<Creator | null>;
+  findByHandle(handle: string): Promise<Creator | null>;
 
   /**
    * Saves the creator state (insert or update).

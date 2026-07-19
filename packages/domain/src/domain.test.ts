@@ -120,24 +120,29 @@ describe("Value Objects", () => {
 });
 
 describe("Creator Entity", () => {
-  it("should transition status from active to suspended to active", () => {
-    const creator = new Creator("c1", new Email("c1@rishi.ai"));
-    expect(creator.status).toBe("active");
-
-    creator.suspend();
-    expect(creator.status).toBe("suspended");
-
-    creator.activate();
-    expect(creator.status).toBe("active");
+  it("should successfully construct a Creator with valid properties", () => {
+    const creator = new Creator(
+      "c1",
+      "w1",
+      " John Doe ",
+      " John_Doe ",
+      "Bio info",
+      "https://avatar.url"
+    );
+    expect(creator.id).toBe("c1");
+    expect(creator.workspaceId).toBe("w1");
+    expect(creator.name).toBe("John Doe");
+    expect(creator.handle).toBe("john_doe");
+    expect(creator.bio).toBe("Bio info");
+    expect(creator.avatarUrl).toBe("https://avatar.url");
+    expect(creator.createdAt).toBeInstanceOf(Date);
   });
 
-  it("should fail to transition status when deleted", () => {
-    const creator = new Creator("c1", new Email("c1@rishi.ai"));
-    creator.markAsDeleted();
-    expect(creator.status).toBe("deleted");
-
-    expect(() => creator.activate()).toThrow(InvalidStateTransitionException);
-    expect(() => creator.suspend()).toThrow(InvalidStateTransitionException);
+  it("should throw ValidationException on empty or invalid properties", () => {
+    expect(() => new Creator("", "w1", "John", "john")).toThrow(ValidationException);
+    expect(() => new Creator("c1", "", "John", "john")).toThrow(ValidationException);
+    expect(() => new Creator("c1", "w1", "", "john")).toThrow(ValidationException);
+    expect(() => new Creator("c1", "w1", "John", "")).toThrow(ValidationException);
   });
 });
 

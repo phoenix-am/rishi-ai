@@ -110,6 +110,7 @@ export {
   workspacesRelations,
   workspaceMembersRelations,
   sessionsRelations,
+  creatorsRelations,
 } from "./schema/index.js";
 
 // Re-export Mappers

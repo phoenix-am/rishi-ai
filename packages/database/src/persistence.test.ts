@@ -49,8 +49,11 @@ describe("Persistence Repositories", () => {
     it("should resolve creator by ID", async () => {
       const mockRow = {
         id: "c1",
-        email: "test@rishi.ai",
-        status: "active",
+        workspaceId: "w1",
+        name: "John Doe",
+        handle: "john_doe",
+        bio: "Bio description",
+        avatarUrl: "https://avatar.url",
         createdAt: new Date(),
       };
       const mockClient = createMockDbClient([[mockRow]]);
@@ -60,7 +63,31 @@ describe("Persistence Repositories", () => {
       const creator = await repo.findById("c1");
       expect(creator).toBeInstanceOf(Creator);
       expect(creator!.id).toBe("c1");
-      expect(creator!.email).toBe("test@rishi.ai");
+      expect(creator!.workspaceId).toBe("w1");
+      expect(creator!.name).toBe("John Doe");
+      expect(creator!.handle).toBe("john_doe");
+      expect(creator!.bio).toBe("Bio description");
+      expect(creator!.avatarUrl).toBe("https://avatar.url");
+      expect(mockClient.select).toHaveBeenCalled();
+    });
+
+    it("should resolve creator by handle", async () => {
+      const mockRow = {
+        id: "c1",
+        workspaceId: "w1",
+        name: "John Doe",
+        handle: "john_doe",
+        bio: "Bio description",
+        avatarUrl: "https://avatar.url",
+        createdAt: new Date(),
+      };
+      const mockClient = createMockDbClient([[mockRow]]);
+      const dbService = new DatabaseService(mockPool, mockClient, txManager);
+      const repo = new DrizzleCreatorRepository(dbService);
+
+      const creator = await repo.findByHandle("john_doe");
+      expect(creator).toBeInstanceOf(Creator);
+      expect(creator!.handle).toBe("john_doe");
       expect(mockClient.select).toHaveBeenCalled();
     });
 

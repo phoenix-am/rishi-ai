@@ -15,8 +15,13 @@ import {
  */
 export const creators = pgTable("creators", {
   id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull().unique(),
-  status: text("status").notNull(),
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
+    .notNull(),
+  name: text("name").notNull(),
+  handle: text("handle").notNull().unique(),
+  bio: text("bio"),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -171,6 +176,7 @@ export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
     references: [users.id],
   }),
   workspaceMembers: many(workspaceMembers),
+  creators: many(creators),
 }));
 
 export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
@@ -188,5 +194,12 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
     references: [users.id],
+  }),
+}));
+
+export const creatorsRelations = relations(creators, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [creators.workspaceId],
+    references: [workspaces.id],
   }),
 }));
