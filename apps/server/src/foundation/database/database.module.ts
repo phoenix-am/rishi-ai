@@ -10,6 +10,8 @@ import {
   DrizzleScriptBlockRepository,
   DrizzleProjectMemoryRepository,
   DrizzleProjectRepository,
+  DrizzleWorkflowRepository,
+  DrizzleWorkflowRunRepository,
 } from "@rishi/database";
 import {
   CREATOR_REPOSITORY,
@@ -18,6 +20,8 @@ import {
   SCRIPT_BLOCK_REPOSITORY,
   PROJECT_MEMORY_REPOSITORY,
   PROJECT_REPOSITORY,
+  WORKFLOW_REPOSITORY,
+  WORKFLOW_RUN_REPOSITORY,
 } from "@rishi/domain";
 import { LoggerFactory } from "@rishi/logger";
 import { RequestContext } from "../context/request.context.js";
@@ -94,6 +98,16 @@ import { RequestContext } from "../context/request.context.js";
       useFactory: (dbService: DatabaseService) => new DrizzleProjectRepository(dbService),
       inject: [DatabaseService],
     },
+    {
+      provide: WORKFLOW_REPOSITORY,
+      useFactory: (dbService: DatabaseService) => new DrizzleWorkflowRepository(dbService),
+      inject: [DatabaseService],
+    },
+    {
+      provide: WORKFLOW_RUN_REPOSITORY,
+      useFactory: (dbService: DatabaseService) => new DrizzleWorkflowRunRepository(dbService),
+      inject: [DatabaseService],
+    },
   ],
   exports: [
     ConfigService,
@@ -107,6 +121,8 @@ import { RequestContext } from "../context/request.context.js";
     SCRIPT_BLOCK_REPOSITORY,
     PROJECT_MEMORY_REPOSITORY,
     PROJECT_REPOSITORY,
+    WORKFLOW_REPOSITORY,
+    WORKFLOW_RUN_REPOSITORY,
   ],
 })
 export class DatabaseModule {}

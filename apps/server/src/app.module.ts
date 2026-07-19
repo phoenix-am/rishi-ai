@@ -9,6 +9,7 @@ import { FoundationModule } from "./foundation/foundation.module.js";
 import { HealthModule } from "./foundation/health/health.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { CreatorsModule } from "./modules/creators/creators.module.js";
+import { WorkflowsModule } from "./modules/workflows/workflows.module.js";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CreatorsModule } from "./modules/creators/creators.module.js";
     HealthModule, // Health checks endpoint
     AuthModule,
     CreatorsModule,
+    WorkflowsModule,
   ],
   providers: [
     // Domain Services
