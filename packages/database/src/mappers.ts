@@ -284,6 +284,7 @@ export const WorkflowRunMapper = {
     id: string;
     workflowId: string;
     workspaceId: string;
+    projectId: string | null;
     status: string;
     state: any;
     startedAt: Date;
@@ -296,7 +297,8 @@ export const WorkflowRunMapper = {
       row.status,
       row.state,
       row.startedAt,
-      row.completedAt
+      row.completedAt,
+      row.projectId
     );
   },
 
@@ -305,6 +307,7 @@ export const WorkflowRunMapper = {
       id: entity.id,
       workflowId: entity.workflowId,
       workspaceId: entity.workspaceId,
+      projectId: entity.projectId,
       status: entity.status,
       state: entity.state,
       startedAt: entity.startedAt,

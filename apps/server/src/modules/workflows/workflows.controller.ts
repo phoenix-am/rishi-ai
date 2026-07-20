@@ -24,6 +24,7 @@ import { CurrentWorkspace } from "../../common/security/current-workspace.decora
 import { WorkflowsService } from "./services/workflows.service.js";
 import { CreateWorkflowDto } from "./dto/create-workflow.dto.js";
 import { UpdateWorkflowDto } from "./dto/update-workflow.dto.js";
+import { TriggerWorkflowRunDto } from "./dto/trigger-workflow-run.dto.js";
 import { WorkflowResponseDto } from "./dto/workflow-response.dto.js";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto.js";
 import { PaginationTransformPipe } from "../../common/pagination/pipes/pagination-transform.pipe.js";
@@ -122,13 +123,20 @@ export class WorkflowsController {
   public async triggerRun(
     @CurrentWorkspace() workspace: { id: string },
     @Param("id", ParseUUIDPipe) id: string,
-    @Body() inputs: Record<string, any>
+    @Body(new ValidationPipe({ transform: true, expectedType: TriggerWorkflowRunDto }))
+    dto: TriggerWorkflowRunDto
   ) {
-    const run = await this.workflowsService.createRun(workspace.id, id, inputs);
+    const run = await this.workflowsService.createRun(
+      workspace.id,
+      id,
+      dto.inputs,
+      dto.projectId || null
+    );
     return {
       id: run.id,
       workflowId: run.workflowId,
       workspaceId: run.workspaceId,
+      projectId: run.projectId,
       status: run.status,
       state: run.state,
       startedAt: run.startedAt,

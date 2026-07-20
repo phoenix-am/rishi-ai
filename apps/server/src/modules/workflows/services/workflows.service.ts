@@ -1,6 +1,16 @@
 import { Injectable, Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
-import { Workflow, WorkflowRun, WORKFLOW_REPOSITORY, WORKFLOW_RUN_REPOSITORY } from "@rishi/domain";
-import type { IWorkflowRepository, IWorkflowRunRepository } from "@rishi/domain";
+import {
+  Workflow,
+  WorkflowRun,
+  WORKFLOW_REPOSITORY,
+  WORKFLOW_RUN_REPOSITORY,
+  PROJECT_REPOSITORY,
+} from "@rishi/domain";
+import type {
+  IWorkflowRepository,
+  IWorkflowRunRepository,
+  IProjectRepository,
+} from "@rishi/domain";
 import { DatabaseService, workflows, WorkflowMapper } from "@rishi/database";
 import { TransactionManager } from "@rishi/transaction";
 import { CreateWorkflowDto } from "../dto/create-workflow.dto.js";
@@ -16,6 +26,7 @@ export class WorkflowsService {
   constructor(
     @Inject(WORKFLOW_REPOSITORY) private readonly workflowRepo: IWorkflowRepository,
     @Inject(WORKFLOW_RUN_REPOSITORY) private readonly workflowRunRepo: IWorkflowRunRepository,
+    @Inject(PROJECT_REPOSITORY) private readonly projectRepo: IProjectRepository,
     @Inject(DatabaseService) private readonly dbService: DatabaseService,
     @Inject(TransactionManager) private readonly txManager: TransactionManager,
     @Inject("DRIZZLE_CLIENT") private readonly drizzleClient: any
@@ -158,11 +169,13 @@ export class WorkflowsService {
 
   /**
    * Starts a new workflow run by setting it to PENDING.
+   * If a projectId is provided, verifies it belongs to the same workspace (IDOR prevention).
    */
   public async createRun(
     workspaceId: string,
     workflowId: string,
-    inputs: Record<string, any>
+    inputs: Record<string, any>,
+    projectId: string | null = null
   ): Promise<WorkflowRun> {
     return this.txManager.runInTransaction(this.drizzleClient.db, async () => {
       const workflow = await this.workflowRepo.findById(workflowId);
@@ -174,13 +187,28 @@ export class WorkflowsService {
         throw new ForbiddenException("Access Denied: You do not own this workflow.");
       }
 
+      // IDOR Prevention (Security Audit A.1): Verify projectId belongs to this workspace
+      if (projectId) {
+        const project = await this.projectRepo.findById(projectId);
+        if (!project) {
+          throw new NotFoundException(`Project with ID '${projectId}' was not found.`);
+        }
+        if (project.workspaceId !== workspaceId) {
+          throw new ForbiddenException(
+            "Access Denied: The specified project does not belong to your workspace."
+          );
+        }
+      }
+
       const run = new WorkflowRun(
         randomUUID(),
         workflowId,
         workspaceId,
         "PENDING",
         { inputs, outputs: {} },
-        new Date()
+        new Date(),
+        null,
+        projectId
       );
 
       await this.workflowRunRepo.save(run);

@@ -37,6 +37,7 @@ export class DrizzleWorkflowRunRepository implements IWorkflowRunRepository {
         set: {
           workflowId: data.workflowId,
           workspaceId: data.workspaceId,
+          projectId: data.projectId,
           status: data.status,
           state: data.state,
           completedAt: data.completedAt,

@@ -3,9 +3,10 @@ import { AiModule } from "../../foundation/ai/ai.module.js";
 import { WorkflowsController } from "./workflows.controller.js";
 import { WorkflowsService } from "./services/workflows.service.js";
 import { WorkflowEngineService } from "./services/workflow-engine.service.js";
+import { ContentAssetsModule } from "../content-assets/content-assets.module.js";
 
 @Module({
-  imports: [AiModule],
+  imports: [AiModule, ContentAssetsModule],
   controllers: [WorkflowsController],
   providers: [WorkflowsService, WorkflowEngineService],
   exports: [WorkflowsService, WorkflowEngineService],

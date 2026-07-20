@@ -516,6 +516,7 @@ export interface IWorkflowRun {
   readonly id: string;
   readonly workflowId: string;
   readonly workspaceId: string;
+  readonly projectId: string | null;
   readonly status: string;
   readonly state: {
     inputs: Record<string, any>;
@@ -595,6 +596,7 @@ export class WorkflowRun implements IWorkflowRun {
   public readonly id: string;
   public readonly workflowId: string;
   public readonly workspaceId: string;
+  public readonly projectId: string | null;
   private _status: string;
   private _state: {
     inputs: Record<string, any>;
@@ -614,7 +616,8 @@ export class WorkflowRun implements IWorkflowRun {
       outputs: {},
     },
     startedAt: Date = new Date(),
-    completedAt: Date | null = null
+    completedAt: Date | null = null,
+    projectId: string | null = null
   ) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new ValidationException("WorkflowRun ID must be a non-empty string.");
@@ -635,6 +638,7 @@ export class WorkflowRun implements IWorkflowRun {
     this.id = id;
     this.workflowId = workflowId;
     this.workspaceId = workspaceId;
+    this.projectId = projectId;
     this._status = status.trim();
     this._state = state;
     this.startedAt = startedAt;
