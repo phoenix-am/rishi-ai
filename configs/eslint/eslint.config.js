@@ -25,6 +25,8 @@ export default ts.config(
       "**/*.config.ts",
       "**/vite.config.ts",
       "**/vitest.config.ts",
+      "**/*.cjs",
+      "**/.pnpmfile.cjs",
     ],
   },
   {
