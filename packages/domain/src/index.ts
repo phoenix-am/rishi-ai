@@ -12,11 +12,12 @@ export type {
   KnowledgeAssetStatus,
   WorkingContextStatus,
   ScriptBlockStatus,
-  ProjectState,
   IWorkflowNode,
   IWorkflowEngine,
   IWorkflow,
   IWorkflowRun,
+  IContentAsset,
+  ContentAssetType,
 } from "./entities.js";
 
 // Providers
@@ -31,6 +32,7 @@ export {
   WorkingContext,
   ScriptBlock,
   Project,
+  ContentAsset,
   WorkflowNodeType,
   Workflow,
   WorkflowRun,
@@ -57,6 +59,7 @@ export type {
   IProjectMemoryRepository,
   IWorkflowRepository,
   IWorkflowRunRepository,
+  IContentAssetRepository,
 } from "./repositories.js";
 
 // Domain Events (Base interface as type, concrete classes as values)
@@ -80,6 +83,7 @@ export {
   SCRIPT_BLOCK_REPOSITORY,
   PROJECT_MEMORY_REPOSITORY,
   PROJECT_REPOSITORY,
+  CONTENT_ASSET_REPOSITORY,
   WORKFLOW_REPOSITORY,
   WORKFLOW_RUN_REPOSITORY,
 } from "./repositories.js";

@@ -7,6 +7,7 @@ import {
   ProjectMemory,
   Workflow,
   WorkflowRun,
+  ContentAsset,
 } from "./entities.js";
 
 export const CREATOR_REPOSITORY = Symbol.for("CreatorRepository");
@@ -15,6 +16,7 @@ export const KNOWLEDGE_SNAPSHOT_REPOSITORY = Symbol.for("KnowledgeSnapshotReposi
 export const SCRIPT_BLOCK_REPOSITORY = Symbol.for("ScriptBlockRepository");
 export const PROJECT_MEMORY_REPOSITORY = Symbol.for("ProjectMemoryRepository");
 export const PROJECT_REPOSITORY = Symbol.for("ProjectRepository");
+export const CONTENT_ASSET_REPOSITORY = Symbol.for("ContentAssetRepository");
 export const WORKFLOW_REPOSITORY = Symbol.for("WorkflowRepository");
 export const WORKFLOW_RUN_REPOSITORY = Symbol.for("WorkflowRunRepository");
 
@@ -59,6 +61,31 @@ export interface IProjectRepository {
 
   /**
    * Checks if a project exists.
+   */
+  exists(id: string): Promise<boolean>;
+}
+
+/**
+ * Interface contract for ContentAsset persistence.
+ */
+export interface IContentAssetRepository {
+  /**
+   * Resolves a content asset by ID.
+   */
+  findById(id: string): Promise<ContentAsset | null>;
+
+  /**
+   * Resolves all content assets attached to a specific project.
+   */
+  findByProjectId(projectId: string): Promise<ContentAsset[]>;
+
+  /**
+   * Saves a content asset.
+   */
+  save(asset: ContentAsset): Promise<void>;
+
+  /**
+   * Checks if a content asset exists.
    */
   exists(id: string): Promise<boolean>;
 }
