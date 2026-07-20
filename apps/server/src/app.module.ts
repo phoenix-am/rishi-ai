@@ -11,6 +11,10 @@ import { AuthModule } from "./modules/auth/auth.module.js";
 import { CreatorsModule } from "./modules/creators/creators.module.js";
 import { WorkflowsModule } from "./modules/workflows/workflows.module.js";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
+import { AllExceptionsFilter } from "./foundation/filters/all-exceptions.filter.js";
+import { LoggingInterceptor } from "./foundation/interceptors/logging.interceptor.js";
 
 import { ProjectsModule } from "./modules/projects/projects.module.js";
 import { ContentAssetsModule } from "./modules/content-assets/content-assets.module.js";
@@ -26,6 +30,12 @@ import { ContentAssetsModule } from "./modules/content-assets/content-assets.mod
     ProjectsModule,
     ContentAssetsModule,
     EventEmitterModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
   ],
 
   providers: [
@@ -33,6 +43,19 @@ import { ContentAssetsModule } from "./modules/content-assets/content-assets.mod
     {
       provide: ProjectWorkflowService,
       useClass: ProjectWorkflowService,
+    },
+    // Global Providers
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
   ],
   exports: [DatabaseModule, ProjectWorkflowService],
