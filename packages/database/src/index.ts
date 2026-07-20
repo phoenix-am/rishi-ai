@@ -115,6 +115,9 @@ export {
   workflowRuns,
   workflowsRelations,
   workflowRunsRelations,
+  contentAssets,
+  projectsRelations,
+  contentAssetsRelations,
 } from "./schema/index.js";
 
 // Re-export Mappers
@@ -125,6 +128,7 @@ export {
   BlockMapper,
   MemoryMapper,
   ProjectMapper,
+  ContentAssetMapper,
   WorkflowMapper,
   WorkflowRunMapper,
 } from "./mappers.js";
@@ -137,6 +141,7 @@ export { DrizzleScriptBlockRepository } from "./repositories/block.js";
 export { DrizzleProjectMemoryRepository } from "./repositories/memory.js";
 export { DrizzleWorkflowRepository } from "./repositories/workflow.js";
 export { DrizzleWorkflowRunRepository } from "./repositories/workflow-run.js";
+export { DrizzleContentAssetRepository } from "./repositories/content-asset.js";
 export {
   DrizzleProjectRepository,
   PersistenceException,

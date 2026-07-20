@@ -43,17 +43,30 @@ export const knowledgeAssets = pgTable("knowledge_assets", {
  */
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
-  creatorId: uuid("creator_id")
-    .references(() => creators.id, { onDelete: "cascade" })
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
     .notNull(),
-  title: text("title").notNull(),
-  state: text("state").notNull(),
-  version: integer("version").default(1).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("draft"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  deletedAt: timestamp("deleted_at"),
-  previousState: text("previous_state"),
-  hasStateDrift: boolean("has_state_drift").default(false).notNull(),
+});
+
+/**
+ * Database schema for Content Assets.
+ */
+export const contentAssets = pgTable("content_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
+    .references(() => projects.id, { onDelete: "cascade" })
+    .notNull(),
+  workspaceId: uuid("workspace_id")
+    .references(() => workspaces.id, { onDelete: "cascade" })
+    .notNull(),
+  type: text("type").notNull(), // enum: SCRIPT, AUDIO, VIDEO, IMAGE
+  contentUrl: text("content_url"),
+  textContent: text("text_content"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 /**
@@ -177,6 +190,7 @@ export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
   }),
   workspaceMembers: many(workspaceMembers),
   creators: many(creators),
+  projects: many(projects),
 }));
 
 export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
@@ -252,6 +266,25 @@ export const workflowRunsRelations = relations(workflowRuns, ({ one }) => ({
   }),
   workspace: one(workspaces, {
     fields: [workflowRuns.workspaceId],
+    references: [workspaces.id],
+  }),
+}));
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [projects.workspaceId],
+    references: [workspaces.id],
+  }),
+  contentAssets: many(contentAssets),
+}));
+
+export const contentAssetsRelations = relations(contentAssets, ({ one }) => ({
+  project: one(projects, {
+    fields: [contentAssets.projectId],
+    references: [projects.id],
+  }),
+  workspace: one(workspaces, {
+    fields: [contentAssets.workspaceId],
     references: [workspaces.id],
   }),
 }));
