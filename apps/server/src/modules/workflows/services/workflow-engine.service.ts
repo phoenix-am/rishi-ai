@@ -10,6 +10,8 @@ import type {
   ITTSProvider,
 } from "@rishi/domain";
 
+import { EventEmitter2 } from "@nestjs/event-emitter";
+
 @Injectable()
 export class WorkflowEngineService implements IWorkflowEngine {
   constructor(
@@ -17,7 +19,8 @@ export class WorkflowEngineService implements IWorkflowEngine {
     @Inject(WORKFLOW_RUN_REPOSITORY) private readonly workflowRunRepo: IWorkflowRunRepository,
     @Inject("ILLMProvider") private readonly llmProvider: ILLMProvider,
     @Inject("ITTSProvider") private readonly ttsProvider: ITTSProvider,
-    @Inject("ILogger") private readonly logger: ILogger
+    @Inject("ILogger") private readonly logger: ILogger,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async execute(run: IWorkflowRun): Promise<void> {
@@ -37,6 +40,12 @@ export class WorkflowEngineService implements IWorkflowEngine {
     try {
       (run as any).start();
       await this.workflowRunRepo.save(run as any);
+
+      this.eventEmitter.emit(`workflow.run.${run.id}`, {
+        type: "RUN_STARTED",
+        runId: run.id,
+        timestamp: new Date().toISOString(),
+      });
 
       const nodes = workflow.definition.nodes;
       const edges = workflow.definition.edges;
@@ -64,8 +73,23 @@ export class WorkflowEngineService implements IWorkflowEngine {
 
         this.logger.info(`Executing node ${node.name} (${node.type})`);
 
+        this.eventEmitter.emit(`workflow.run.${run.id}`, {
+          type: "NODE_STARTED",
+          runId: run.id,
+          nodeId: node.id,
+          timestamp: new Date().toISOString(),
+        });
+
         // Execute Node
         await this.executeNode(node, run);
+
+        this.eventEmitter.emit(`workflow.run.${run.id}`, {
+          type: "NODE_COMPLETED",
+          runId: run.id,
+          nodeId: node.id,
+          data: run.state.outputs[node.id],
+          timestamp: new Date().toISOString(),
+        });
 
         // Find next nodes
         const nextEdges = edges.filter((e) => e.from === nodeId);
@@ -81,10 +105,23 @@ export class WorkflowEngineService implements IWorkflowEngine {
       this.logger.info(`Workflow run ${run.id} completed successfully`);
       (run as any).complete(run.state.outputs || {});
       await this.workflowRunRepo.save(run as any);
+
+      this.eventEmitter.emit(`workflow.run.${run.id}`, {
+        type: "RUN_COMPLETED",
+        runId: run.id,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
       this.logger.error(`Error executing workflow run ${run.id}`, error as Error);
       (run as any).fail({ error: (error as Error).message });
       await this.workflowRunRepo.save(run as any);
+
+      this.eventEmitter.emit(`workflow.run.${run.id}`, {
+        type: "RUN_FAILED",
+        runId: run.id,
+        error: (error as Error).message,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
