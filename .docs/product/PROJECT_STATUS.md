@@ -14,7 +14,7 @@
 ## Current Status
 
 > [!TIP]
-> **Current Active Phase:** Phase 7 — Agentic Core
+> **Current Active Phase:** Phase 7 — Real-Time Execution Streaming (SSE)
 
 **Current Milestone:** Phase 6 — AI Integrations (LLM & Media Providers) Completed & Verified (Frozen)
 
@@ -132,15 +132,16 @@
 
 ### Next Step
 
-**Phase 7: Agentic Core**
+**Phase 7: Real-Time Execution Streaming (SSE)**
 
 Scope includes:
-- Implement recursive agent reasoning loops.
-- Build autonomous task planning & tool selection.
+- Implement real-time token and event delivery using Server-Sent Events (SSE).
+- Implement stream manager to coordinate execution status updates.
+- Handle transient network drops, client disconnections, and transactional rollbacks.
 
 **Refined Roadmap Path:**
 - Phase 6: AI Integrations (LLM & Media Providers) (Completed)
-- Phase 7: Agentic Core (Active)
+- Phase 7: Real-Time Execution Streaming (SSE) (Active)
 
 ### Current Blockers
 
