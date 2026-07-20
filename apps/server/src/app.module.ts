@@ -10,6 +10,7 @@ import { HealthModule } from "./foundation/health/health.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { CreatorsModule } from "./modules/creators/creators.module.js";
 import { WorkflowsModule } from "./modules/workflows/workflows.module.js";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
   imports: [
@@ -19,7 +20,9 @@ import { WorkflowsModule } from "./modules/workflows/workflows.module.js";
     AuthModule,
     CreatorsModule,
     WorkflowsModule,
+    EventEmitterModule.forRoot(),
   ],
+
   providers: [
     // Domain Services
     {
