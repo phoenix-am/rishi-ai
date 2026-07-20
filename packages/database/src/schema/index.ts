@@ -245,6 +245,7 @@ export const workflowRuns = pgTable("workflow_runs", {
   workspaceId: uuid("workspace_id")
     .references(() => workspaces.id, { onDelete: "cascade" })
     .notNull(),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
   status: text("status").notNull().default("PENDING"),
   state: jsonb("state").$type<any>().notNull().default({ inputs: {}, outputs: {} }),
   startedAt: timestamp("started_at").defaultNow().notNull(),
@@ -267,6 +268,10 @@ export const workflowRunsRelations = relations(workflowRuns, ({ one }) => ({
   workspace: one(workspaces, {
     fields: [workflowRuns.workspaceId],
     references: [workspaces.id],
+  }),
+  project: one(projects, {
+    fields: [workflowRuns.projectId],
+    references: [projects.id],
   }),
 }));
 

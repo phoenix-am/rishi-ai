@@ -277,31 +277,6 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -309,41 +284,40 @@
           "notNull": true,
           "default": "now()"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "previous_state": {
-          "name": "previous_state",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "has_state_drift": {
-          "name": "has_state_drift",
-          "type": "boolean",
+        "status": {
+          "name": "status",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": "'draft'"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "projects_creator_id_creators_id_fk": {
-          "name": "projects_creator_id_creators_id_fk",
+        "projects_workspace_id_workspaces_id_fk": {
+          "name": "projects_workspace_id_workspaces_id_fk",
           "tableFrom": "projects",
-          "tableTo": "creators",
+          "tableTo": "workspaces",
           "columnsFrom": [
-            "creator_id"
+            "workspace_id"
           ],
           "columnsTo": [
             "id"

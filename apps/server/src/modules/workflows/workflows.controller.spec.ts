@@ -195,6 +195,7 @@ describe("WorkflowsController E2E / Integration", () => {
         id: "e4b07384-d113-4ec6-a5d7-ecf97e2893d6",
         workflowId: "d3b07384-d113-4ec6-a5d7-ecf97e2893d5",
         workspaceId: "w-123",
+        projectId: "p-456",
         status: "PENDING",
         state: { inputs: { topic: "history" }, outputs: {} },
         startedAt: new Date().toISOString(),
@@ -210,7 +211,10 @@ describe("WorkflowsController E2E / Integration", () => {
           "x-workspace-id": "w-123",
         },
         payload: {
-          topic: "history",
+          inputs: {
+            topic: "history",
+          },
+          projectId: "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
         },
       });
 

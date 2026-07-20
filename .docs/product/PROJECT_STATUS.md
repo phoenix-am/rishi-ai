@@ -161,20 +161,26 @@
 - ✅ Workflow Engine execution loop integrated
 - ✅ Phase 6 Frozen
 - ✅ Phase 7 Frozen
+- [x] Phase 7: AI Integrations (`@rishi/ai`)
+- [x] Phase 8: Projects & Content Assets Module
+- [x] Phase 9: End-to-End Orchestration (Integration)
+- [ ] Phase 10: Event & Async Processing (Future)
 - ✅ Content Assets & Projects Domain (Phase 8) Complete
 - ✅ Projects & Content Assets Schema and APIs Complete
 - ✅ Phase 8 Frozen
 
 ### Next Step
 
-**Phase 9: TBD**
+### Next Step
+
+**Phase 10: Event & Async Processing (Future)**
 
 Scope includes:
-- Define next steps for the project.
+- Extracting background tasks to a message queue.
 
 **Refined Roadmap Path:**
-- Phase 8: Content Assets & Projects Domain (Completed)
-- Phase 9: TBD (Active)
+- Phase 9: End-to-End Orchestration (Completed)
+- Phase 10: Event & Async Processing (Active)
 
 ### Current Blockers
 
