@@ -10,6 +10,7 @@ import {
   DrizzleScriptBlockRepository,
   DrizzleProjectMemoryRepository,
   DrizzleProjectRepository,
+  DrizzleContentAssetRepository,
   DrizzleWorkflowRepository,
   DrizzleWorkflowRunRepository,
 } from "@rishi/database";
@@ -20,6 +21,7 @@ import {
   SCRIPT_BLOCK_REPOSITORY,
   PROJECT_MEMORY_REPOSITORY,
   PROJECT_REPOSITORY,
+  CONTENT_ASSET_REPOSITORY,
   WORKFLOW_REPOSITORY,
   WORKFLOW_RUN_REPOSITORY,
 } from "@rishi/domain";
@@ -99,6 +101,11 @@ import { RequestContext } from "../context/request.context.js";
       inject: [DatabaseService],
     },
     {
+      provide: CONTENT_ASSET_REPOSITORY,
+      useFactory: (dbService: DatabaseService) => new DrizzleContentAssetRepository(dbService),
+      inject: [DatabaseService],
+    },
+    {
       provide: WORKFLOW_REPOSITORY,
       useFactory: (dbService: DatabaseService) => new DrizzleWorkflowRepository(dbService),
       inject: [DatabaseService],
@@ -121,6 +128,7 @@ import { RequestContext } from "../context/request.context.js";
     SCRIPT_BLOCK_REPOSITORY,
     PROJECT_MEMORY_REPOSITORY,
     PROJECT_REPOSITORY,
+    CONTENT_ASSET_REPOSITORY,
     WORKFLOW_REPOSITORY,
     WORKFLOW_RUN_REPOSITORY,
   ],

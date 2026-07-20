@@ -12,6 +12,9 @@ import { CreatorsModule } from "./modules/creators/creators.module.js";
 import { WorkflowsModule } from "./modules/workflows/workflows.module.js";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 
+import { ProjectsModule } from "./modules/projects/projects.module.js";
+import { ContentAssetsModule } from "./modules/content-assets/content-assets.module.js";
+
 @Module({
   imports: [
     DatabaseModule, // Exports Config, Logger, TransactionManager, DB client/service and all repositories globally
@@ -20,6 +23,8 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
     AuthModule,
     CreatorsModule,
     WorkflowsModule,
+    ProjectsModule,
+    ContentAssetsModule,
     EventEmitterModule.forRoot(),
   ],
 

@@ -1,10 +1,4 @@
 import { InvalidStateTransitionException, ValidationException } from "./exceptions.js";
-import {
-  IDomainEvent,
-  ProjectStateTransitionedDomainEvent,
-  ScriptBlockUpdatedDomainEvent,
-  KnowledgeAssetAddedDomainEvent,
-} from "./events.js";
 
 /**
  * Core interface for a Creator, consumed by other packages.
@@ -24,12 +18,23 @@ export interface ICreator {
  */
 export interface IProject {
   readonly id: string;
-  readonly creatorId: string;
-  readonly title: string;
-  readonly state: string;
-  readonly version: number;
+  readonly workspaceId: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly status: string;
   readonly createdAt: Date;
-  readonly updatedAt: Date;
+}
+
+export type ContentAssetType = "SCRIPT" | "AUDIO" | "VIDEO" | "IMAGE";
+
+export interface IContentAsset {
+  readonly id: string;
+  readonly projectId: string;
+  readonly workspaceId: string;
+  readonly type: ContentAssetType;
+  readonly contentUrl: string | null;
+  readonly textContent: string | null;
+  readonly createdAt: Date;
 }
 
 /**
@@ -394,483 +399,69 @@ export type ProjectState =
 /**
  * The 9-stage sequence.
  */
-const PROJECT_STATE_SEQUENCE: ProjectState[] = [
-  "draft",
-  "research",
-  "knowledge_organized",
-  "working_context_generated",
-  "outline_generated",
-  "script_generated",
-  "review",
-  "exported",
-  "archived",
-];
 
 /**
  * Aggregate Root governing the content production lifecycle and its aggregates.
  */
 export class Project implements IProject {
   public readonly id: string;
-  public readonly creatorId: string;
-  private _title: string;
-  private _state: ProjectState;
-  private _version: number;
+  public readonly workspaceId: string;
+  public readonly name: string;
+  public readonly description: string | null;
+  public readonly status: string;
   public readonly createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null = null;
-
-  // Aggregate boundary collections
-  private readonly _scriptBlocks: ScriptBlock[] = [];
-  private readonly _snapshots: KnowledgeSnapshot[] = [];
-  private _workingContext: WorkingContext | null = null;
-
-  // State restoration
-  private _previousState: ProjectState | null = null;
-  private _hasStateDrift: boolean = false;
-
-  // Domain events buffer
-  private readonly _domainEvents: IDomainEvent[] = [];
 
   constructor(
     id: string,
-    creatorId: string,
-    title: string,
-    state: ProjectState = "draft",
-    version: number = 1,
-    createdAt: Date = new Date(),
-    updatedAt: Date = new Date(),
-    deletedAt: Date | null = null,
-    previousState: ProjectState | null = null,
-    hasStateDrift: boolean = false
+    workspaceId: string,
+    name: string,
+    description: string | null = null,
+    status: string = "draft",
+    createdAt: Date = new Date()
   ) {
     if (!id) throw new ValidationException("Project ID is required.");
-    if (!creatorId) throw new ValidationException("Creator ID is required.");
-    if (!title) throw new ValidationException("Project Title is required.");
+    if (!workspaceId) throw new ValidationException("Workspace ID is required.");
+    if (!name) throw new ValidationException("Project Name is required.");
 
     this.id = id;
-    this.creatorId = creatorId;
-    this._title = title;
-    this._state = state;
-    this._version = version;
+    this.workspaceId = workspaceId;
+    this.name = name;
+    this.description = description;
+    this.status = status;
     this.createdAt = createdAt;
-    this._updatedAt = updatedAt;
-    this._deletedAt = deletedAt;
-    this._previousState = previousState;
-    this._hasStateDrift = hasStateDrift;
   }
+}
 
-  public get title(): string {
-    return this._title;
-  }
-  public get state(): ProjectState {
-    return this._state;
-  }
-  public get version(): number {
-    return this._version;
-  }
-  public get updatedAt(): Date {
-    return this._updatedAt;
-  }
-  public get deletedAt(): Date | null {
-    return this._deletedAt;
-  }
-  public get scriptBlocks(): readonly ScriptBlock[] {
-    return this._scriptBlocks;
-  }
-  public get snapshots(): readonly KnowledgeSnapshot[] {
-    return this._snapshots;
-  }
-  public get workingContext(): WorkingContext | null {
-    return this._workingContext;
-  }
-  public get previousState(): ProjectState | null {
-    return this._previousState;
-  }
-  public get hasStateDrift(): boolean {
-    return this._hasStateDrift;
-  }
-  public get domainEvents(): readonly IDomainEvent[] {
-    return this._domainEvents;
-  }
+export class ContentAsset implements IContentAsset {
+  public readonly id: string;
+  public readonly projectId: string;
+  public readonly workspaceId: string;
+  public readonly type: ContentAssetType;
+  public readonly contentUrl: string | null;
+  public readonly textContent: string | null;
+  public readonly createdAt: Date;
 
-  public clearDomainEvents(): void {
-    this._domainEvents.length = 0;
-  }
+  constructor(
+    id: string,
+    projectId: string,
+    workspaceId: string,
+    type: ContentAssetType,
+    contentUrl: string | null = null,
+    textContent: string | null = null,
+    createdAt: Date = new Date()
+  ) {
+    if (!id) throw new ValidationException("Content Asset ID is required.");
+    if (!projectId) throw new ValidationException("Project ID is required.");
+    if (!workspaceId) throw new ValidationException("Workspace ID is required.");
+    if (!type) throw new ValidationException("Content Asset Type is required.");
 
-  private addDomainEvent(event: IDomainEvent): void {
-    this._domainEvents.push(event);
-  }
-
-  /**
-   * Asserts the project aggregate has not been archived or deleted.
-   */
-  private assertActive(): void {
-    if (this._deletedAt) {
-      throw new ValidationException(`Project '${this.id}' is deleted.`);
-    }
-    if (this._state === "archived") {
-      throw new InvalidStateTransitionException(
-        "Project",
-        this.id,
-        this._state,
-        "active_operation"
-      );
-    }
-  }
-
-  /**
-   * Transitions the project to the target state validating sequence boundaries.
-   *
-   * @param targetState - State to transition to.
-   * @param correlationId - Tracking correlation.
-   */
-  public transitionTo(targetState: ProjectState, correlationId: string): void {
-    if (this._deletedAt) {
-      throw new ValidationException(`Cannot transition deleted project: '${this.id}'`);
-    }
-
-    if (this._state === targetState) {
-      return;
-    }
-
-    const currentIndex = PROJECT_STATE_SEQUENCE.indexOf(this._state);
-    const targetIndex = PROJECT_STATE_SEQUENCE.indexOf(targetState);
-
-    // Archiving is allowed from any active stage
-    if (targetState === "archived") {
-      this._previousState = this._state;
-      const oldState = this._state;
-      this._state = "archived";
-      this._updatedAt = new Date();
-      this._version += 1;
-      this.addDomainEvent(
-        new ProjectStateTransitionedDomainEvent(this.id, correlationId, {
-          oldState,
-          newState: "archived",
-          isBackstep: false,
-        })
-      );
-      return;
-    }
-
-    // Unarchiving restores the exact prior state
-    if (this._state === "archived") {
-      const restoreState = this._previousState || "draft";
-      this._state = restoreState;
-      this._previousState = null;
-      this._updatedAt = new Date();
-      this._version += 1;
-      this.addDomainEvent(
-        new ProjectStateTransitionedDomainEvent(this.id, correlationId, {
-          oldState: "archived",
-          newState: restoreState,
-          isBackstep: false,
-        })
-      );
-      return;
-    }
-
-    // Forward Step: must go to the immediate next state
-    if (targetIndex === currentIndex + 1) {
-      const oldState = this._state;
-      this._state = targetState;
-      this._updatedAt = new Date();
-      this._version += 1;
-      this.addDomainEvent(
-        new ProjectStateTransitionedDomainEvent(this.id, correlationId, {
-          oldState,
-          newState: targetState,
-          isBackstep: false,
-        })
-      );
-      return;
-    }
-
-    // Backward Step: allowed to go to any previously completed index
-    if (targetIndex < currentIndex) {
-      const oldState = this._state;
-      this._state = targetState;
-      this._hasStateDrift = true;
-      this._updatedAt = new Date();
-      this._version += 1;
-      this.addDomainEvent(
-        new ProjectStateTransitionedDomainEvent(this.id, correlationId, {
-          oldState,
-          newState: targetState,
-          isBackstep: true,
-        })
-      );
-      return;
-    }
-
-    // Any other transition is illegal (e.g. jumping forward bypass stages)
-    throw new InvalidStateTransitionException("Project", this.id, this._state, targetState);
-  }
-
-  /**
-   * Initializes working context state inside aggregate.
-   */
-  public initializeWorkingContext(context: WorkingContext): void {
-    this.assertActive();
-    if (context.projectId !== this.id) {
-      throw new ValidationException("Working context does not belong to this project.");
-    }
-    this._workingContext = context;
-  }
-
-  /**
-   * Recompiles the working context content, clearing state drift warnings.
-   */
-  public recompileWorkingContext(compressedText: string): void {
-    this.assertActive();
-    if (!this._workingContext) {
-      throw new ValidationException("Working context is not initialized.");
-    }
-    this._workingContext.recompile(compressedText);
-    this._hasStateDrift = false;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * Soft deletes the project aggregate.
-   */
-  public softDelete(): void {
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * Adds a new script block entity to the project.
-   */
-  public addScriptBlock(block: ScriptBlock, correlationId: string): void {
-    this.assertActive();
-    if (block.projectId !== this.id) {
-      throw new ValidationException("Script block does not belong to this project.");
-    }
-    if (this._scriptBlocks.some((b) => b.id === block.id)) {
-      throw new ValidationException(`Script block with ID '${block.id}' already exists.`);
-    }
-
-    this._scriptBlocks.push(block);
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    // Sorting script blocks by sortOrder
-    this._scriptBlocks.sort((a, b) => a.sortOrder - b.sortOrder);
-
-    this.addDomainEvent(
-      new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-        blockId: block.id,
-        sortOrder: block.sortOrder,
-        isLocked: block.isLocked,
-        title: block.title,
-        content: block.content,
-      })
-    );
-  }
-
-  /**
-   * Updates an existing script block's content, asserting lock safety.
-   */
-  public updateScriptBlockContent(blockId: string, content: string, correlationId: string): void {
-    this.assertActive();
-    const block = this._scriptBlocks.find((b) => b.id === blockId);
-    if (!block) {
-      throw new ValidationException(`Script block '${blockId}' not found in project.`);
-    }
-
-    block.updateContent(content);
-
-    // Set context drift if updating script content after context generation
-    const stateIndex = PROJECT_STATE_SEQUENCE.indexOf(this._state);
-    const generatedIndex = PROJECT_STATE_SEQUENCE.indexOf("working_context_generated");
-    if (stateIndex >= generatedIndex) {
-      this._hasStateDrift = true;
-    }
-
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    this.addDomainEvent(
-      new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-        blockId: block.id,
-        sortOrder: block.sortOrder,
-        isLocked: block.isLocked,
-        title: block.title,
-        content: block.content,
-      })
-    );
-  }
-
-  /**
-   * Updates an existing script block's title.
-   */
-  public updateScriptBlockTitle(blockId: string, title: string, correlationId: string): void {
-    this.assertActive();
-    const block = this._scriptBlocks.find((b) => b.id === blockId);
-    if (!block) {
-      throw new ValidationException(`Script block '${blockId}' not found in project.`);
-    }
-
-    block.updateTitle(title);
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    this.addDomainEvent(
-      new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-        blockId: block.id,
-        sortOrder: block.sortOrder,
-        isLocked: block.isLocked,
-        title: block.title,
-        content: block.content,
-      })
-    );
-  }
-
-  /**
-   * Locks a specific script block from subsequent AI mutations.
-   */
-  public lockScriptBlock(blockId: string, correlationId: string): void {
-    this.assertActive();
-    const block = this._scriptBlocks.find((b) => b.id === blockId);
-    if (!block) {
-      throw new ValidationException(`Script block '${blockId}' not found in project.`);
-    }
-    block.lock();
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    this.addDomainEvent(
-      new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-        blockId: block.id,
-        sortOrder: block.sortOrder,
-        isLocked: block.isLocked,
-        title: block.title,
-        content: block.content,
-      })
-    );
-  }
-
-  /**
-   * Unlocks a specific script block.
-   */
-  public unlockScriptBlock(blockId: string, correlationId: string): void {
-    this.assertActive();
-    const block = this._scriptBlocks.find((b) => b.id === blockId);
-    if (!block) {
-      throw new ValidationException(`Script block '${blockId}' not found in project.`);
-    }
-    block.unlock();
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    this.addDomainEvent(
-      new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-        blockId: block.id,
-        sortOrder: block.sortOrder,
-        isLocked: block.isLocked,
-        title: block.title,
-        content: block.content,
-      })
-    );
-  }
-
-  /**
-   * Reorders the script blocks array according to a list of IDs.
-   */
-  public reorderScriptBlocks(blockIds: string[], correlationId: string): void {
-    this.assertActive();
-    if (blockIds.length !== this._scriptBlocks.length) {
-      throw new ValidationException("Reorder array length does not match project blocks count.");
-    }
-
-    // Verify all IDs correspond to our script blocks
-    const ourIds = new Set(this._scriptBlocks.map((b) => b.id));
-    for (const id of blockIds) {
-      if (!ourIds.has(id)) {
-        throw new ValidationException(
-          `Script block ID '${id}' is not associated with this project.`
-        );
-      }
-    }
-
-    // Reassign sort orders
-    blockIds.forEach((id, index) => {
-      const block = this._scriptBlocks.find((b) => b.id === id)!;
-      block.updateSortOrder(index);
-    });
-
-    // Re-sort array
-    this._scriptBlocks.sort((a, b) => a.sortOrder - b.sortOrder);
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    // Emit event for each block to capture re-sorted index
-    for (const block of this._scriptBlocks) {
-      this.addDomainEvent(
-        new ScriptBlockUpdatedDomainEvent(this.id, correlationId, {
-          blockId: block.id,
-          sortOrder: block.sortOrder,
-          isLocked: block.isLocked,
-          title: block.title,
-          content: block.content,
-        })
-      );
-    }
-  }
-
-  /**
-   * Attaches a deep frozen KnowledgeSnapshot to the project container.
-   */
-  public attachSnapshot(snapshot: KnowledgeSnapshot, correlationId: string): void {
-    this.assertActive();
-    if (snapshot.projectId !== this.id) {
-      throw new ValidationException("Snapshot does not belong to this project.");
-    }
-    if (this._snapshots.some((s) => s.id === snapshot.id)) {
-      throw new ValidationException(`Snapshot with ID '${snapshot.id}' already attached.`);
-    }
-
-    this._snapshots.push(snapshot);
-    this._hasStateDrift = true;
-    this._updatedAt = new Date();
-    this._version += 1;
-
-    this.addDomainEvent(
-      new KnowledgeAssetAddedDomainEvent(this.id, correlationId, {
-        assetId: snapshot.assetId || "unknown_or_deleted",
-        title: snapshot.title,
-        storagePath: "snapshot_frozen_storage",
-      })
-    );
-  }
-
-  /**
-   * Hydrates the project scriptBlocks from database retrieval.
-   * Internal hydration methods do not trigger domain events or mark state drift.
-   */
-  public hydrateScriptBlocks(blocks: ScriptBlock[]): void {
-    this._scriptBlocks.length = 0;
-    for (const block of blocks) {
-      if (block.projectId !== this.id) {
-        throw new ValidationException("Script block does not belong to this project.");
-      }
-      this._scriptBlocks.push(block);
-    }
-    this._scriptBlocks.sort((a, b) => a.sortOrder - b.sortOrder);
-  }
-
-  /**
-   * Hydrates snapshots from database retrieval.
-   */
-  public hydrateSnapshots(snapshots: KnowledgeSnapshot[]): void {
-    this._snapshots.length = 0;
-    for (const snap of snapshots) {
-      if (snap.projectId !== this.id) {
-        throw new ValidationException("Snapshot does not belong to this project.");
-      }
-      this._snapshots.push(snap);
-    }
+    this.id = id;
+    this.projectId = projectId;
+    this.workspaceId = workspaceId;
+    this.type = type;
+    this.contentUrl = contentUrl;
+    this.textContent = textContent;
+    this.createdAt = createdAt;
   }
 }
 

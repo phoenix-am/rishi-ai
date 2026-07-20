@@ -6,7 +6,8 @@ import {
   ProjectMemory,
   ScriptBlock,
   Project,
-  ProjectState,
+  ContentAsset,
+  ContentAssetType,
   Workflow,
   WorkflowRun,
 } from "@rishi/domain";
@@ -177,71 +178,66 @@ export const MemoryMapper = {
 };
 
 export const ProjectMapper = {
-  toDomain(
-    row: {
-      id: string;
-      creatorId: string;
-      title: string;
-      state: string;
-      version: number;
-      createdAt: Date;
-      updatedAt: Date;
-      deletedAt: Date | null;
-      previousState: string | null;
-      hasStateDrift: boolean;
-    },
-    blocksRows: Array<{
-      id: string;
-      projectId: string;
-      sortOrder: number;
-      isLocked: boolean;
-      title: string;
-      content: string;
-    }>,
-    snapshotRows: Array<{
-      id: string;
-      projectId: string;
-      assetId: string | null;
-      title: string;
-      capturedVersionId: number;
-      frozenContent: string;
-      attachedAt: Date;
-    }>
-  ): Project {
-    const project = new Project(
+  toDomain(row: {
+    id: string;
+    workspaceId: string;
+    name: string;
+    description: string | null;
+    status: string;
+    createdAt: Date;
+  }): Project {
+    return new Project(
       row.id,
-      row.creatorId,
-      row.title,
-      row.state as ProjectState,
-      row.version,
-      row.createdAt,
-      row.updatedAt,
-      row.deletedAt,
-      row.previousState as ProjectState | null,
-      row.hasStateDrift
+      row.workspaceId,
+      row.name,
+      row.description,
+      row.status,
+      row.createdAt
     );
-
-    const blocks = blocksRows.map((b) => BlockMapper.toDomain(b));
-    const snapshots = snapshotRows.map((s) => SnapshotMapper.toDomain(s));
-
-    project.hydrateScriptBlocks(blocks);
-    project.hydrateSnapshots(snapshots);
-
-    return project;
   },
 
   toPersistence(entity: Project) {
     return {
       id: entity.id,
-      creatorId: entity.creatorId,
-      title: entity.title,
-      state: entity.state,
-      version: entity.version,
+      workspaceId: entity.workspaceId,
+      name: entity.name,
+      description: entity.description,
+      status: entity.status,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-      deletedAt: entity.deletedAt,
-      previousState: entity.previousState,
-      hasStateDrift: entity.hasStateDrift,
+    };
+  },
+};
+
+export const ContentAssetMapper = {
+  toDomain(row: {
+    id: string;
+    projectId: string;
+    workspaceId: string;
+    type: string;
+    contentUrl: string | null;
+    textContent: string | null;
+    createdAt: Date;
+  }): ContentAsset {
+    return new ContentAsset(
+      row.id,
+      row.projectId,
+      row.workspaceId,
+      row.type as ContentAssetType,
+      row.contentUrl,
+      row.textContent,
+      row.createdAt
+    );
+  },
+
+  toPersistence(entity: ContentAsset) {
+    return {
+      id: entity.id,
+      projectId: entity.projectId,
+      workspaceId: entity.workspaceId,
+      type: entity.type,
+      contentUrl: entity.contentUrl,
+      textContent: entity.textContent,
+      createdAt: entity.createdAt,
     };
   },
 };
