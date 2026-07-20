@@ -30,9 +30,18 @@ import { PaginationTransformPipe } from "../../common/pagination/pipes/paginatio
 import { ApiStandardResponse, ApiPaginatedResponse } from "../../common/swagger/index.js";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Observable, fromEvent } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, takeWhile } from "rxjs/operators";
 import { StreamEventDto } from "../../common/streaming/dto/stream-event.dto.js";
 import { SseInterceptor } from "../../common/streaming/sse.interceptor.js";
+
+export interface WorkflowRunEventPayload {
+  type: string;
+  runId: string;
+  nodeId?: string;
+  data?: any;
+  error?: string;
+  timestamp: string;
+}
 
 @ApiTags("Workflows")
 @ApiBearerAuth()
@@ -156,8 +165,14 @@ export class WorkflowsController {
     // Validate that the user owns the workspace associated with the runId
     await this.workflowsService.getRun(workspace.id, runId);
 
-    return fromEvent(this.eventEmitter, `workflow.run.${runId}`).pipe(
-      map((payload: any) => {
+    return (
+      fromEvent(this.eventEmitter, `workflow.run.${runId}`) as Observable<WorkflowRunEventPayload>
+    ).pipe(
+      takeWhile(
+        (payload) => payload.type !== "RUN_COMPLETED" && payload.type !== "RUN_FAILED",
+        true
+      ),
+      map((payload) => {
         // We use StreamEventDto to ensure it adheres to the established SSE infrastructure
         const streamEvent = new StreamEventDto({
           event: payload.type,
