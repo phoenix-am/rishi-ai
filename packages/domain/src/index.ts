@@ -19,6 +19,9 @@ export type {
   IWorkflowRun,
 } from "./entities.js";
 
+// Providers
+export type { ILLMProvider, ITTSProvider } from "./providers.js";
+
 // Re-export concrete entities and aggregate roots
 export {
   Creator,
