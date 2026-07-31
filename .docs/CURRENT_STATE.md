@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-010 completed snapshot |
+| **Status** | Verified TDD-011 completed snapshot |
 | **Snapshot Date** | 2026-08-01 |
 | **Branch** | `main` |
-| **Verified Implementation Revision** | `9a3dac514773b1d42b4876808894e4f2c08a139a` |
+| **Verified Implementation Revision** | `a19f6ad3a6652107ca869488abe6131c977ee8e0` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The validated TDD-010 implementation and its required status updates are committed on `main`.
+The validated TDD-011 implementation and its required status updates are committed on `main`.
 
 ## 3. Current Implementation Status
 
@@ -55,6 +55,7 @@ The validated TDD-010 implementation and its required status updates are committ
 - TDD-008 durable background processing through `apps/server`: PostgreSQL-backed Graphile Worker dispatch, versioned payload validation, decorator-based task discovery, configurable priority and concurrency, native exponential retries, explicit fatal/permanent-failure dead-letter tracking, transactional advisory locks, structured observability, and bounded graceful shutdown with force-unlock recovery.
 - TDD-009 document parsing through `apps/server`: MIME-routed PDF, DOCX, HTML, EPUB, Markdown, and plain-text adapters; deterministic Unicode and whitespace normalization; word count, title, author, and page metadata where available; malformed-input and unsupported-media errors; bounded archive extraction; and stable module exports.
 - TDD-010 vector curation through `apps/server`: deterministic bounded overlapping chunks, stable chunk identifiers, provider/version metadata, injectable embedding-provider contract, validated 1536-dimension vectors, bounded batch execution, timeout and cancellation handling, transactional idempotent persistence, workspace/version checks, retry-safe queue processing, and project-scoped pgvector cosine retrieval.
+- TDD-011 knowledge snapshots through `apps/server`, `@rishi/domain`, and `@rishi/database`: project/workspace-scoped source validation, transactional immutable metadata and chunk replication, captured source versions, deterministic chunk ordering, idempotent and concurrency-safe attachment, rollback on incomplete replication, project-scoped retrieval and detach, stable errors, and public NestJS exports.
 - Creator CRUD API.
 - Workflow definition CRUD and workflow-run persistence API.
 - Project create/update/get/list API.
@@ -67,7 +68,7 @@ The validated TDD-010 implementation and its required status updates are committ
 
 - `@rishi/events`: a minimal event contract package exists; there is no complete event subsystem or durable outbox.
 - `@rishi/testing`: one shared assertion helper exists; the documented broader testing toolkit does not.
-- Database/domain support for knowledge assets, chunks, snapshots, snapshot chunks, script-block sources, script blocks, project memory, and generation-job persistence exists without the later application workflows.
+- Database/domain support for knowledge assets, chunks, script-block sources, script blocks, project memory, and generation-job persistence exists without the later application workflows.
 - Workflow engine execution logic exists, but the public run-creation path does not invoke it. Runs remain `PENDING` unless the engine is called outside the public flow.
 - AI orchestration supports a narrow set of node types and lacks the documented queue, retry, failover, circuit-breaker, compliance, and prompt-assembly layers.
 - Streaming provides run lifecycle notifications, not the documented token-buffered transactional streaming pipeline.
@@ -77,7 +78,6 @@ The validated TDD-010 implementation and its required status updates are committ
 
 - Production cloud object-storage adapter; the local storage provider and provider boundary are implemented.
 - Document upload and asynchronous ingestion orchestration; the reusable parsing module is implemented.
-- Immutable snapshot-chunk workflow and source grounding.
 - Nine-stage project state machine and active project-memory workflow.
 - Prompt-template registry, working-context compiler, and token-budget enforcement.
 - Compliance and citation validation.
@@ -129,13 +129,13 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository has completed **TDD-010 Vector Curation within Milestone 5** of the authoritative engineering roadmap. TDD-011 Snapshot is the next scheduled task and remains partially implemented.
+The repository has completed **TDD-011 Snapshot and Milestone 5** of the authoritative engineering roadmap. TDD-012 Project Workspace is the next scheduled task and remains partially implemented.
 
 Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-08-01 during TDD-010:
+The current worktree was last fully validated on 2026-08-01 during TDD-011:
 
 | Command | Result |
 | :--- | :--- |
@@ -145,12 +145,12 @@ The current worktree was last fully validated on 2026-08-01 during TDD-010:
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` | Passed — 47 files and 268 tests passed; 3 files and 9 opt-in PostgreSQL tests skipped |
-| Focused PostgreSQL/pgvector integration | Passed — 2 files and 7 tests passed, including TDD-004 database coverage and TDD-010 persistence, rollback, isolation, idempotency, and semantic retrieval |
+| `pnpm test` | Passed — 49 files and 275 tests passed; 4 files and 15 opt-in PostgreSQL tests skipped |
+| Focused PostgreSQL/pgvector integration | Passed — 2 files and 9 tests passed, including TDD-004 database coverage and TDD-011 snapshot persistence, rollback, isolation, idempotency, concurrency, retrieval, and immutability |
 | `pnpm audit --prod --audit-level high` | Passed — no known production dependency vulnerabilities |
 | `git diff --check` | Passed |
 
-These results cover the TDD-010 worktree, including deterministic chunking and identifiers, bounded embedding execution, provider failure classification, queue locking and retry behavior, dimension validation, transactional replacement, workspace isolation, semantic retrieval, dependency injection, and public exports. The nine opt-in PostgreSQL tests are skipped by the required default command; seven database and vector tests were also executed explicitly against PostgreSQL 16 with pgvector and passed.
+These results cover the TDD-011 worktree, including source validation, immutable metadata and chunk copying, source-version capture, transaction rollback, project/workspace isolation, idempotent concurrent creation, project-scoped retrieval and removal, dependency injection, and public exports. The fifteen opt-in PostgreSQL tests are skipped by the required default command; nine database and snapshot tests were also executed explicitly against PostgreSQL 16 with pgvector and passed.
 
 ## 8. Verification Process
 
