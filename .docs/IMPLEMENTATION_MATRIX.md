@@ -8,7 +8,7 @@
 | **Authority** | Level 9 informational reference |
 | **Implementation Driver** | No |
 | **Status** | Verified snapshot |
-| **Last Verified** | 2026-07-31 |
+| **Last Verified** | 2026-08-01 |
 
 This matrix does not replace [CURRENT_STATE.md](CURRENT_STATE.md). `CURRENT_STATE.md` describes verified repository reality and blockers. This document only makes the evidence chain easier to locate. Source code, public APIs, schemas, and executable tests remain authoritative when this matrix becomes stale.
 
@@ -16,7 +16,7 @@ Implementation status uses only the vocabulary defined by [DOCUMENT_AUTHORITY.md
 
 | Module | ADR | TDD | Source Code Location | Test Location | Implementation Status | Last Verified |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Configuration | [ADR-001](adrs/ADR-001_configuration_management.md) | [TDD-001](tdds/TDD-001_Config_Module.md) | `packages/config/src/` | `packages/config/src/index.test.ts` | Implemented | 2026-07-31 |
+| Configuration | [ADR-001](adrs/ADR-001_configuration_management.md) | [TDD-001](tdds/TDD-001_Config_Module.md) | `packages/config/src/` | `packages/config/src/index.test.ts` | Implemented | 2026-08-01 |
 | Logging | [ADR-002](adrs/ADR-002_logger_architecture.md) | [TDD-002](tdds/TDD-002_Logger_Module.md) | `packages/logger/src/` | `packages/logger/src/index.test.ts` | Implemented | 2026-07-31 |
 | Transaction context | [ADR-003](adrs/ADR-003_transaction_context_propagation.md) | [TDD-003](tdds/TDD-003_Transaction_Module.md) | `packages/transaction/src/` | `packages/transaction/src/index.test.ts` | Implemented | 2026-07-31 |
 | Database and persistence | [ADR-004](adrs/ADR-004_lazy_database_connection.md) | [TDD-004](tdds/TDD-004_Database_Module.md) | `packages/database/src/`, `packages/database/migrations/` | `packages/database/src/index.test.ts`, `packages/database/src/persistence.test.ts`, `packages/database/src/database.integration.test.ts` | Implemented | 2026-07-31 |
@@ -25,7 +25,7 @@ Implementation status uses only the vocabulary defined by [DOCUMENT_AUTHORITY.md
 | Authorization | [ADR-005](adrs/ADR-005_authentication_identity_foundation.md) | [TDD-007](tdds/TDD-007_Authorization_Module.md) | `apps/server/src/common/security/`, protected controllers and application services in `apps/server/src/modules/` | `apps/server/src/common/security/security.spec.ts`, `apps/server/src/common/security/authorization.service.spec.ts`, `apps/server/src/common/security/resource-ownership.guard.spec.ts`, `apps/server/src/common/security/authorization-route-metadata.spec.ts`, `apps/server/src/modules/content-assets/services/content-assets-application.service.spec.ts`, representative controller integration tests | Implemented | 2026-07-31 |
 | Durable queue | — | [TDD-008](tdds/TDD-008_Queue_Module.md) | `apps/server/src/common/queue/`, `packages/database/src/schema/index.ts`, `packages/database/migrations/0005_tdd008_queue.sql` | `apps/server/src/common/queue/**/*.spec.ts`, `apps/server/src/common/queue/queue.integration.test.ts`, `apps/server/src/app.module.spec.ts` | Implemented | 2026-07-31 |
 | Document parsing | — | [TDD-009](tdds/TDD-009_Parsing_Module.md) | `apps/server/src/modules/knowledge/parsing/` | `apps/server/src/modules/knowledge/parsing/**/*.spec.ts` | Implemented | 2026-07-31 |
-| Vector curation and retrieval | — | [TDD-010](tdds/TDD-010_Vector_Curation_Module.md) | — | — | Planned | 2026-07-31 |
+| Vector curation and retrieval | — | [TDD-010](tdds/TDD-010_Vector_Curation_Module.md) | `apps/server/src/modules/knowledge/vector/`, `packages/config/src/`, `packages/database/src/schema/index.ts` | `apps/server/src/modules/knowledge/vector/**/*.test.ts`, `packages/database/src/database.integration.test.ts`, `packages/config/src/index.test.ts` | Implemented | 2026-08-01 |
 | Knowledge snapshots | — | [TDD-011](tdds/TDD-011_Snapshot_Module.md) | `packages/domain/src/`, `packages/database/src/repositories/snapshot.ts` | `packages/domain/src/domain.test.ts`, `packages/database/src/persistence.test.ts` | Partially Implemented | 2026-07-31 |
 | Project workspace | — | [TDD-012](tdds/TDD-012_Project_Workspace_Module.md) | `apps/server/src/modules/projects/`, `packages/database/src/repositories/project.ts` | `packages/database/src/persistence.test.ts` | Partially Implemented | 2026-07-31 |
 | Project memory | — | [TDD-013](tdds/TDD-013_Project_Memory_Module.md) | `packages/domain/src/`, `packages/database/src/repositories/memory.ts` | `packages/domain/src/domain.test.ts`, `packages/database/src/persistence.test.ts` | Partially Implemented | 2026-07-31 |

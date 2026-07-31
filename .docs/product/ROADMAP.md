@@ -24,7 +24,7 @@
 - Progress updates must reflect verified implementation state only.
 - Milestone structure or dependency order may change only with architectural justification and Product Owner approval.
 
-The current execution point is **Milestone 5, TDD-010 Vector Curation**, pending an approved implementation task. Later partial work remains preserved but does not change the dependency gate.
+The current execution point is **Milestone 5, TDD-011 Snapshot**, which is partially implemented and pending an approved completion task. Later partial work remains preserved but does not change the dependency gate.
 
 ## 2. Status Vocabulary
 
@@ -86,7 +86,7 @@ The current execution point is **Milestone 5, TDD-010 Vector Curation**, pending
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
 | [TDD-009 Parsing](../tdds/TDD-009_Parsing_Module.md) | Completed | Convert supported uploaded documents into normalized deterministic text. | TDD-005; TDD-007; TDD-008 | Parser contracts and supported adapters validate input, produce normalized output, report deterministic failures, preserve tenant boundaries, and pass fixture-based tests. |
-| [TDD-010 Vector Curation](../tdds/TDD-010_Vector_Curation_Module.md) | Pending | Chunk, embed, version, index, and retrieve grounded knowledge. | TDD-004; TDD-008; TDD-009 | Deterministic chunks, provider/version metadata, dimension validation, pgvector indexes, semantic retrieval, retry-safe processing, and database integration tests are complete. |
+| [TDD-010 Vector Curation](../tdds/TDD-010_Vector_Curation_Module.md) | Completed | Chunk, embed, version, index, and retrieve grounded knowledge. | TDD-004; TDD-008; TDD-009 | Deterministic chunks, provider/version metadata, dimension validation, pgvector indexes, semantic retrieval, retry-safe processing, and database integration tests are complete. |
 | [TDD-011 Snapshot](../tdds/TDD-011_Snapshot_Module.md) | Partial | Create immutable project-scoped knowledge snapshots and source grounding. | TDD-010 | Snapshot creation copies immutable source chunks transactionally; later source mutation cannot change prior snapshots; application services, persistence, and focused tests are complete. |
 
 ## 8. Milestone 6 — Workspace
