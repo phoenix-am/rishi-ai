@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-008 completed snapshot with uncommitted work |
+| **Status** | Verified TDD-008 completed snapshot |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **HEAD** | `9716a319343e4f9cec4b32ad6e039168dd47fdea` |
+| **Verified Implementation Revision** | `d55f6fb03029411857b2c6b1ad6ca85f4a58f68c` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The working tree is not clean. It contains the validated TDD-008 implementation and required status updates described by this snapshot. These items are not represented by the recorded HEAD commit.
+The validated TDD-008 implementation and its required status updates are committed on `main`. The repository was clean and synchronized with `origin/main` at handoff.
 
 ## 3. Current Implementation Status
 
@@ -111,7 +111,6 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ### Stabilization blockers
 
-- The worktree contains the uncommitted TDD-008 implementation described by this snapshot.
 - Historical status, architecture, TDD, process, and README documents remain inconsistent; S0.4 cleanup has not occurred.
 - The public workflow-run endpoint does not connect run creation to `WorkflowEngineService.execute()`.
 - No product task processors are registered yet; TDD-009 and later roadmap tasks will supply queue consumers without changing the queue boundary.
