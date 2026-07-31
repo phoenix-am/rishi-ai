@@ -7,6 +7,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rishi_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +42,7 @@ jobs:
           NODE_ENV: test
           PORT: 3001
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rishi_test
+          DATABASE_INTEGRATION_TESTS: "true"
           PRIMARY_AI_PROVIDER: gemini
           AES_MASTER_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           LOG_LEVEL: error

@@ -2,18 +2,19 @@
 
 Database connection initialization, connection pooling, and ORM setups using Drizzle ORM.
 
-| Metadata                  | Value                                                                                                                                            |
-| :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lifecycle**             | Reference                                                                                                                                        |
-| **Implementation Status** | Partially Implemented target coverage                                                                                                            |
-| **Current Authority**     | Package source and public API                                                                                                                    |
-| **Review Status**         | Initialization-phase responsibility statements below are superseded where current source contains schemas, migrations, mappers, and repositories |
-| **Last Verified**         | 2026-07-31                                                                                                                                       |
+| Metadata                  | Value                                                               |
+| :------------------------ | :------------------------------------------------------------------ |
+| **Lifecycle**             | Reference                                                           |
+| **Implementation Status** | Implemented TDD-004 persistence foundation                          |
+| **Current Authority**     | Package source and public API                                       |
+| **Review Status**         | Aligned with the current package source, migrations, and public API |
+| **Last Verified**         | 2026-07-31                                                          |
 
 ## Responsibilities
 
-- Houses Drizzle client instantiation, connection pool helper, database validation, and migrations configurations.
-- **Must never own:** Table schemas, migrations scripts (except within raw configs), query repositories, or entity seeders during the initialization phase.
+- Owns lazy Drizzle/PostgreSQL client initialization, connection health, explicit migration execution, table schemas, persistence mappers, and repository adapters.
+- Integrates active `@rishi/transaction` contexts without opening a database connection during package import.
+- Does not own application workflows, storage providers, parsing, queue execution, or AI orchestration.
 
 ## Dependencies
 
@@ -22,4 +23,10 @@ Database connection initialization, connection pooling, and ORM setups using Dri
 
 ## Public API
 
-Exposes the database connection pool bootstrap helper (`createDatabaseClient`) and standard types.
+Exposes `createDatabaseClient`, `DatabaseService`, `runDatabaseMigrations`, schema objects and relations, persistence mappers, and repository adapters through the package root.
+
+Run pending migrations explicitly from the repository root:
+
+```bash
+pnpm db:migrate
+```

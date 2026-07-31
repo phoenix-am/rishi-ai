@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified snapshot with uncommitted work |
+| **Status** | Verified TDD-004 snapshot with uncommitted work |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **HEAD** | `85d7038b0fdfc0e4b725192d22f7b6a1a2d07848` |
+| **HEAD** | `2c0fc8531b0d2f6b17f146d77122e52ca7e78377` |
 
 ## 1. Purpose and Limits
 
@@ -35,7 +35,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The working tree is not clean. It contains the uncommitted S0.1 security remediation, earlier user-owned server/Docker/database changes, and an untracked `Microsoft/` directory. These items are not represented by the recorded HEAD commit and must be preserved until explicitly resolved.
+The working tree is not clean. It contains the uncommitted authoritative roadmap and the validated TDD-004 implementation described by this snapshot. These items are not represented by the recorded HEAD commit.
 
 ## 3. Current Implementation Status
 
@@ -45,7 +45,7 @@ The working tree is not clean. It contains the uncommitted S0.1 security remedia
 - Validated environment configuration through `@rishi/config`.
 - Structured Pino logging through `@rishi/logger`.
 - AsyncLocalStorage transaction propagation through `@rishi/transaction`.
-- PostgreSQL/Drizzle connection foundation, migrations, schemas, mappers, and repositories through `@rishi/database`.
+- Complete TDD-004 PostgreSQL/Drizzle foundation through `@rishi/database`: lazy connections, explicit migration execution, current schemas, constraints, indexes, pgvector columns, public exports, mappers, repositories, and database-backed migration/rollback coverage.
 - Core domain entities, value objects, repository/provider contracts, and domain events through `@rishi/domain`.
 - NestJS/Fastify bootstrap, validation, request context, response envelopes, exception handling, rate limiting, health route, Swagger support, and API versioning.
 - Passwordless OTP generation/verification mechanics, JWT access tokens, refresh sessions, signed cookies, logout, and current-user lookup.
@@ -63,7 +63,7 @@ The working tree is not clean. It contains the uncommitted S0.1 security remedia
 - `@rishi/auth`: public contracts exist, while the working authentication implementation lives in `apps/server`.
 - `@rishi/events`: a minimal event contract package exists; there is no complete event subsystem or durable outbox.
 - `@rishi/testing`: one shared assertion helper exists; the documented broader testing toolkit does not.
-- Database/domain support for knowledge assets, snapshots, script blocks, and project memory exists without complete application workflows.
+- Database/domain support for knowledge assets, chunks, snapshots, snapshot chunks, script-block sources, script blocks, project memory, and generation-job persistence exists without the later application workflows.
 - Workflow engine execution logic exists, but the public run-creation path does not invoke it. Runs remain `PENDING` unless the engine is called outside the public flow.
 - AI orchestration supports a narrow set of node types and lacks the documented queue, retry, failover, circuit-breaker, compliance, and prompt-assembly layers.
 - Streaming provides run lifecycle notifications, not the documented token-buffered transactional streaming pipeline.
@@ -95,7 +95,7 @@ The working tree is not clean. It contains the uncommitted S0.1 security remedia
 | `@rishi/config` | Implemented |
 | `@rishi/logger` | Implemented |
 | `@rishi/transaction` | Implemented |
-| `@rishi/database` | Implemented foundation with partial target schema/application coverage |
+| `@rishi/database` | TDD-004 persistence foundation implemented; later application workflows remain separate roadmap work |
 | `@rishi/domain` | Substantial but partially aligned with current application model |
 | `@rishi/shared` | Implemented, minimal |
 | `@rishi/events` | Partial |
@@ -113,7 +113,6 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 - The public workflow-run endpoint does not connect run creation to `WorkflowEngineService.execute()`.
 - The documented durable queue is absent, leaving workflow execution semantics unresolved.
 - Direct content-asset creation does not verify that the supplied project belongs to the active workspace.
-- No repository command provides a verified production migration workflow.
 
 ### Beta blockers
 
@@ -130,32 +129,28 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository is in the forward-only **S0 stabilization stage**.
+The repository is at **Milestone 2, TDD-004 DatabaseModule** in the authoritative engineering roadmap. The implementation and validation are complete; Product Owner review remains the final completion gate. TDD-005 remains pending and has not been implemented by this task.
 
-- S0.1 Security Baseline Remediation: implemented in the current uncommitted worktree and validated.
-- S0.2 Documentation Governance Audit: completed as the approved analysis baseline.
-- S0.3 Documentation Governance Foundation: represented by the governance documents created with this snapshot.
-- S0.4 Documentation Cleanup: not started.
-
-Historical `Phase 1–10` labels remain Git-history milestones. They are not used by this document to assert current readiness.
+Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-07-31 during S0.1:
+The current worktree was last fully validated on 2026-07-31 during TDD-004:
 
 | Command | Result |
 | :--- | :--- |
-| `pnpm install --frozen-lockfile` | Passed |
+| `pnpm install` | Passed |
 | `pnpm run doctor` | Passed |
-| `pnpm format:check` | Passed with existing module-type warning |
+| `pnpm format` | Passed with existing module-type warning |
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` | Passed — 22 files, 146 tests |
-| `pnpm audit --prod --audit-level high` | Passed — no known vulnerabilities reported |
-| `git diff --check` | Passed with line-ending warnings |
+| `pnpm test` with PostgreSQL integration enabled | Passed — 23 files, 150 tests |
+| `pnpm --filter @rishi/database exec drizzle-kit check --config drizzle.config.ts` | Passed |
+| `pnpm db:migrate` against PostgreSQL 16 with pgvector | Passed |
+| `git diff --check` | Passed with an existing line-ending warning for `packages/database/generate.cjs` |
 
-These results cover the S0.1 worktree. Documentation-only changes made after that validation require their own link, format, consistency, and diff checks before this snapshot is advanced.
+These results cover the TDD-004 worktree, including clean-database migration, constraint, vector-dimension, foreign-key restriction, and transaction rollback verification.
 
 ## 8. Verification Process
 

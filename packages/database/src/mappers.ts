@@ -11,6 +11,9 @@ import {
   Workflow,
   WorkflowRun,
 } from "@rishi/domain";
+import type { projects } from "./schema/index.js";
+
+type PersistedProjectStatus = (typeof projects.$inferInsert)["status"];
 
 /**
  * pure transformation mappers converting database rows to domain models and vice versa.
@@ -202,7 +205,7 @@ export const ProjectMapper = {
       workspaceId: entity.workspaceId,
       name: entity.name,
       description: entity.description,
-      status: entity.status,
+      status: entity.status as PersistedProjectStatus,
       createdAt: entity.createdAt,
     };
   },

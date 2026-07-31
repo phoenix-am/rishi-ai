@@ -95,14 +95,22 @@ export class DatabaseService {
   }
 }
 
+export { DEFAULT_MIGRATIONS_FOLDER, runDatabaseMigrations } from "./migrations.js";
+
 // Re-export Schema tables and relations
 export {
   creators,
   knowledgeAssets,
+  knowledgeChunks,
   projects,
   knowledgeSnapshots,
+  snapshotChunks,
   scriptBlocks,
+  scriptBlockSources,
   projectMemories,
+  generationJobs,
+  projectStateEnum,
+  jobStatusEnum,
   users,
   workspaces,
   workspaceMembers,
@@ -112,6 +120,8 @@ export {
   workspaceMembersRelations,
   sessionsRelations,
   creatorsRelations,
+  knowledgeAssetsRelations,
+  knowledgeChunksRelations,
   workflows,
   workflowRuns,
   workflowsRelations,
@@ -119,6 +129,12 @@ export {
   contentAssets,
   projectsRelations,
   contentAssetsRelations,
+  knowledgeSnapshotsRelations,
+  snapshotChunksRelations,
+  scriptBlocksRelations,
+  scriptBlockSourcesRelations,
+  projectMemoriesRelations,
+  generationJobsRelations,
 } from "./schema/index.js";
 
 // Re-export Mappers

@@ -10,6 +10,17 @@ import {
   workspacesRelations,
   workspaceMembersRelations,
   sessionsRelations,
+  knowledgeChunks,
+  snapshotChunks,
+  scriptBlockSources,
+  generationJobs,
+  knowledgeChunksRelations,
+  snapshotChunksRelations,
+  scriptBlockSourcesRelations,
+  generationJobsRelations,
+  projectStateEnum,
+  jobStatusEnum,
+  runDatabaseMigrations,
 } from "./index.js";
 import { ConfigService } from "@rishi/config";
 import { TransactionManager } from "@rishi/transaction";
@@ -42,6 +53,20 @@ describe("Database Module", () => {
     expect(workspacesRelations).toBeDefined();
     expect(workspaceMembersRelations).toBeDefined();
     expect(sessionsRelations).toBeDefined();
+  });
+
+  it("should expose the complete TDD-004 schema and migration API", () => {
+    expect(knowledgeChunks).toBeDefined();
+    expect(snapshotChunks).toBeDefined();
+    expect(scriptBlockSources).toBeDefined();
+    expect(generationJobs).toBeDefined();
+    expect(knowledgeChunksRelations).toBeDefined();
+    expect(snapshotChunksRelations).toBeDefined();
+    expect(scriptBlockSourcesRelations).toBeDefined();
+    expect(generationJobsRelations).toBeDefined();
+    expect(projectStateEnum.enumValues).toContain("draft");
+    expect(jobStatusEnum.enumValues).toContain("pending");
+    expect(runDatabaseMigrations).toBeTypeOf("function");
   });
 
   it("should initialize client and pool lazily without opening network connections on construction", () => {

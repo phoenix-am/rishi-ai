@@ -64,6 +64,7 @@ jobs:
           NODE_ENV: test
           PORT: 3001
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rishi_ai
+          DATABASE_INTEGRATION_TESTS: "true"
           PRIMARY_AI_PROVIDER: gemini
           AES_MASTER_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           LOG_LEVEL: error
