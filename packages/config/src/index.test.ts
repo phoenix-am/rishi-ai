@@ -38,6 +38,10 @@ describe("Config Module", () => {
     expect(parsed.QUEUE_POLL_INTERVAL_MS).toBe(2_000);
     expect(parsed.QUEUE_MAX_ATTEMPTS).toBe(25);
     expect(parsed.QUEUE_SHUTDOWN_TIMEOUT_MS).toBe(15_000);
+    expect(parsed.VECTOR_CHUNK_MAX_TOKENS).toBe(512);
+    expect(parsed.VECTOR_CHUNK_OVERLAP_TOKENS).toBe(64);
+    expect(parsed.VECTOR_EMBEDDING_DIMENSION).toBe(1536);
+    expect(parsed.VECTOR_SEARCH_MAX_RESULTS).toBe(50);
     expect(parsed.EMAIL_PROVIDER).toBe("disabled");
     expect(parsed.GOOGLE_OAUTH_ENABLED).toBe(false);
   });
@@ -65,6 +69,35 @@ describe("Config Module", () => {
           JWT_PRIVATE_KEY: "mock-private-key",
           JWT_PUBLIC_KEY: "mock-public-key",
           GOOGLE_OAUTH_ENABLED: "true",
+        })
+    ).toThrow(ConfigurationValidationError);
+  });
+
+  it("should reject vector overlap that is not smaller than the chunk size", () => {
+    expect(
+      () =>
+        new ConfigService({
+          NODE_ENV: "test",
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+          AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          JWT_PRIVATE_KEY: "mock-private-key",
+          JWT_PUBLIC_KEY: "mock-public-key",
+          VECTOR_CHUNK_MAX_TOKENS: "10",
+          VECTOR_CHUNK_OVERLAP_TOKENS: "10",
+        })
+    ).toThrow(ConfigurationValidationError);
+  });
+
+  it("should reject vector dimensions that do not match the database schema", () => {
+    expect(
+      () =>
+        new ConfigService({
+          NODE_ENV: "test",
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+          AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          JWT_PRIVATE_KEY: "mock-private-key",
+          JWT_PUBLIC_KEY: "mock-public-key",
+          VECTOR_EMBEDDING_DIMENSION: "384",
         })
     ).toThrow(ConfigurationValidationError);
   });

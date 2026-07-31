@@ -26,6 +26,14 @@ export const envSchema = z
     QUEUE_POLL_INTERVAL_MS: z.coerce.number().int().min(100).max(60_000).default(2_000),
     QUEUE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(100).default(25),
     QUEUE_SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(15_000),
+    VECTOR_CHUNK_MAX_TOKENS: z.coerce.number().int().min(1).max(10_000).default(512),
+    VECTOR_CHUNK_OVERLAP_TOKENS: z.coerce.number().int().min(0).max(9_999).default(64),
+    VECTOR_MAX_INPUT_CHARACTERS: z.coerce.number().int().min(1).max(50_000_000).default(5_000_000),
+    VECTOR_MAX_CHUNKS: z.coerce.number().int().min(1).max(100_000).default(10_000),
+    VECTOR_EMBEDDING_BATCH_SIZE: z.coerce.number().int().min(1).max(100).default(16),
+    VECTOR_EMBEDDING_TIMEOUT_MS: z.coerce.number().int().min(100).max(300_000).default(30_000),
+    VECTOR_EMBEDDING_DIMENSION: z.coerce.number().int().positive().default(1536),
+    VECTOR_SEARCH_MAX_RESULTS: z.coerce.number().int().min(1).max(1_000).default(50),
     EMAIL_PROVIDER: z.enum(["disabled", "smtp"]).default("disabled"),
     SMTP_HOST: z.string().trim().min(1).optional(),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
@@ -47,6 +55,23 @@ export const envSchema = z
     GEMINI_API_KEY: z.string().optional(),
   })
   .superRefine((config, context) => {
+    if (config.VECTOR_CHUNK_OVERLAP_TOKENS >= config.VECTOR_CHUNK_MAX_TOKENS) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["VECTOR_CHUNK_OVERLAP_TOKENS"],
+        message: "VECTOR_CHUNK_OVERLAP_TOKENS must be smaller than VECTOR_CHUNK_MAX_TOKENS.",
+      });
+    }
+
+    if (config.VECTOR_EMBEDDING_DIMENSION !== 1536) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["VECTOR_EMBEDDING_DIMENSION"],
+        message:
+          "VECTOR_EMBEDDING_DIMENSION must match the current 1536-dimension database schema.",
+      });
+    }
+
     if (config.NODE_ENV === "production" && config.EMAIL_PROVIDER !== "smtp") {
       context.addIssue({
         code: z.ZodIssueCode.custom,
