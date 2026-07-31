@@ -19,6 +19,7 @@ import { LoggingInterceptor } from "./foundation/interceptors/logging.intercepto
 
 import { ProjectsModule } from "./modules/projects/projects.module.js";
 import { ContentAssetsModule } from "./modules/content-assets/content-assets.module.js";
+import { QueueModule } from "./common/queue/queue.module.js";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ContentAssetsModule } from "./modules/content-assets/content-assets.mod
     WorkflowsModule,
     ProjectsModule,
     ContentAssetsModule,
+    QueueModule,
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([
       {

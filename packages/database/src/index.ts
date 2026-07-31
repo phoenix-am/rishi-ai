@@ -109,6 +109,7 @@ export {
   scriptBlockSources,
   projectMemories,
   generationJobs,
+  queueDeadLetters,
   projectStateEnum,
   jobStatusEnum,
   users,

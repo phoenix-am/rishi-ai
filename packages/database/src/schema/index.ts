@@ -285,6 +285,27 @@ export const generationJobs = pgTable(
   ]
 );
 
+/** Durable queue failure ledger used for inspection and explicit replay. */
+export const queueDeadLetters = pgTable(
+  "queue_dead_letters",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    queueJobId: text("queue_job_id").notNull(),
+    taskName: text("task_name").notNull(),
+    payload: jsonb("payload").notNull(),
+    errorName: text("error_name").notNull(),
+    errorMessage: text("error_message").notNull(),
+    attempts: integer("attempts").notNull(),
+    failedAt: timestamp("failed_at").defaultNow().notNull(),
+    replayedAt: timestamp("replayed_at"),
+  },
+  (t) => [
+    uniqueIndex("queue_dead_letters_queue_job_id_idx").on(t.queueJobId),
+    index("queue_dead_letters_task_name_idx").on(t.taskName),
+    check("queue_dead_letters_attempts_positive", sql`${t.attempts} >= 1`),
+  ]
+);
+
 /**
  * Database schema for Users.
  */

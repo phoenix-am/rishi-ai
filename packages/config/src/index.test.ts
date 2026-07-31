@@ -34,6 +34,10 @@ describe("Config Module", () => {
     expect(parsed.LOG_LEVEL).toBe("debug");
     expect(parsed.STORAGE_PROVIDER).toBe("local");
     expect(parsed.STORAGE_LOCAL_BASE_DIR).toBe("storage");
+    expect(parsed.QUEUE_CONCURRENCY).toBe(5);
+    expect(parsed.QUEUE_POLL_INTERVAL_MS).toBe(2_000);
+    expect(parsed.QUEUE_MAX_ATTEMPTS).toBe(25);
+    expect(parsed.QUEUE_SHUTDOWN_TIMEOUT_MS).toBe(15_000);
     expect(parsed.EMAIL_PROVIDER).toBe("disabled");
     expect(parsed.GOOGLE_OAUTH_ENABLED).toBe(false);
   });

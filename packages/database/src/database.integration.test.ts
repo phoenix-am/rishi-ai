@@ -59,6 +59,7 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
         "knowledge_chunks",
         "knowledge_snapshots",
         "projects",
+        "queue_dead_letters",
         "script_block_sources",
         "script_blocks",
         "snapshot_chunks",
@@ -81,7 +82,7 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
     const migrationCount = await databasePool.query<{ count: string }>(
       "SELECT count(*) FROM drizzle.__drizzle_migrations"
     );
-    expect(Number(migrationCount.rows[0]?.count)).toBe(5);
+    expect(Number(migrationCount.rows[0]?.count)).toBe(6);
   });
 
   it("enforces database constraints", async () => {

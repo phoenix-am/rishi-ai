@@ -24,7 +24,7 @@
 - Progress updates must reflect verified implementation state only.
 - Milestone structure or dependency order may change only with architectural justification and Product Owner approval.
 
-The current execution point is **Milestone 4, TDD-008 Queue**, pending an approved implementation task. Later partial work remains preserved but does not change the dependency gate.
+The current execution point is **Milestone 5, TDD-009 Parsing**, pending an approved implementation task. Later partial work remains preserved but does not change the dependency gate.
 
 ## 2. Status Vocabulary
 
@@ -70,24 +70,22 @@ The current execution point is **Milestone 4, TDD-008 Queue**, pending an approv
 
 ## 6. Milestone 4 — Background Processing
 
-**Status:** Pending
+**Status:** Completed
 
 **Dependencies:** Milestones 2 and 3
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-008 Queue](../tdds/TDD-008_Queue_Module.md) | Pending | Provide durable PostgreSQL-backed background execution. | TDD-003; TDD-004; TDD-007 | Dispatch, priority processing, advisory-lock serialization, retry policy, dead-letter handling, graceful shutdown/recovery, observability, and database-backed integration tests are complete. |
-
-Milestone 5 remains blocked until TDD-008 is completed or the Product Owner explicitly approves a dependency exception.
+| [TDD-008 Queue](../tdds/TDD-008_Queue_Module.md) | Completed | Provide durable PostgreSQL-backed background execution. | TDD-003; TDD-004; TDD-007 | Dispatch, priority processing, advisory-lock serialization, retry policy, dead-letter handling, graceful shutdown/recovery, observability, and database-backed integration tests are complete. |
 
 ## 7. Milestone 5 — Knowledge Layer
 
-**Status:** Partial and blocked  
+**Status:** Partial
 **Dependencies:** Milestones 2, 3, and 4
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-009 Parsing](../tdds/TDD-009_Parsing_Module.md) | Blocked | Convert supported uploaded documents into normalized deterministic text. | TDD-005; TDD-007; TDD-008 decision | Parser contracts and supported adapters validate input, produce normalized output, report deterministic failures, preserve tenant boundaries, and pass fixture-based tests. |
+| [TDD-009 Parsing](../tdds/TDD-009_Parsing_Module.md) | Pending | Convert supported uploaded documents into normalized deterministic text. | TDD-005; TDD-007; TDD-008 | Parser contracts and supported adapters validate input, produce normalized output, report deterministic failures, preserve tenant boundaries, and pass fixture-based tests. |
 | [TDD-010 Vector Curation](../tdds/TDD-010_Vector_Curation_Module.md) | Blocked | Chunk, embed, version, index, and retrieve grounded knowledge. | TDD-004; TDD-008; TDD-009 | Deterministic chunks, provider/version metadata, dimension validation, pgvector indexes, semantic retrieval, retry-safe processing, and database integration tests are complete. |
 | [TDD-011 Snapshot](../tdds/TDD-011_Snapshot_Module.md) | Partial | Create immutable project-scoped knowledge snapshots and source grounding. | TDD-010 | Snapshot creation copies immutable source chunks transactionally; later source mutation cannot change prior snapshots; application services, persistence, and focused tests are complete. |
 
@@ -110,7 +108,7 @@ Milestone 5 remains blocked until TDD-008 is completed or the Product Owner expl
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
 | [TDD-015 Prompt Assembly](../tdds/TDD-015_Prompt_Assembly_Module.md) | Blocked | Compile deterministic, versioned, token-bounded working context. | TDD-010; TDD-013 | Template resolution, context ranking, token budgeting, deterministic compression, version metadata, validation, and focused tests are complete. |
-| [TDD-016 AI Orchestration](../tdds/TDD-016_AI_Orchestration_Module.md) | Partial | Execute provider-independent generation through the approved workflow boundary. | TDD-008 decision; TDD-015 | Public execution wiring, provider abstraction, retries, timeout/failure behavior, circuit breaking, run-state persistence, cost metadata, secret-safe logging, and focused engine tests are complete. |
+| [TDD-016 AI Orchestration](../tdds/TDD-016_AI_Orchestration_Module.md) | Partial | Execute provider-independent generation through the approved workflow boundary. | TDD-008; TDD-015 | Public execution wiring, provider abstraction, retries, timeout/failure behavior, circuit breaking, run-state persistence, cost metadata, secret-safe logging, and focused engine tests are complete. |
 | [TDD-017 Compliance Validation](../tdds/TDD-017_Compliance_Validation_Module.md) | Blocked | Validate generated structure, formatting, grounding, and citations before persistence. | TDD-014; TDD-016 | Invalid output is rejected before mutation; structural and citation rules are deterministic, traceable, provider-independent, and covered by focused tests. |
 
 ## 10. Milestone 8 — Product Delivery

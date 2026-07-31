@@ -14,6 +14,7 @@ import {
   snapshotChunks,
   scriptBlockSources,
   generationJobs,
+  queueDeadLetters,
   knowledgeChunksRelations,
   snapshotChunksRelations,
   scriptBlockSourcesRelations,
@@ -60,6 +61,7 @@ describe("Database Module", () => {
     expect(snapshotChunks).toBeDefined();
     expect(scriptBlockSources).toBeDefined();
     expect(generationJobs).toBeDefined();
+    expect(queueDeadLetters).toBeDefined();
     expect(knowledgeChunksRelations).toBeDefined();
     expect(snapshotChunksRelations).toBeDefined();
     expect(scriptBlockSourcesRelations).toBeDefined();

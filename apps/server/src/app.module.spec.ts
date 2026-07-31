@@ -16,6 +16,13 @@ import {
 } from "@rishi/domain";
 import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import { generateKeyPairSync } from "crypto";
+import { QUEUE_RUNNER_FACTORY, QUEUE_SERVICE } from "./common/queue/queue.contracts.js";
+
+const queueRunner = {
+  addJob: vi.fn(),
+  stop: vi.fn().mockResolvedValue(undefined),
+  kill: vi.fn().mockResolvedValue(undefined),
+};
 
 describe("AppModule Bootstrap", () => {
   beforeAll(() => {
@@ -112,12 +119,18 @@ describe("AppModule Bootstrap", () => {
     // 7. Storage provider and facade
     expect(moduleRef.get(FILE_STORAGE_PROVIDER)).toBeDefined();
     expect(moduleRef.get(StorageService)).toBeDefined();
+
+    // 8. Durable queue abstraction
+    expect(moduleRef.get(QUEUE_SERVICE)).toBeDefined();
   });
 
   it("should successfully boot application context when database ping succeeds", async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(QUEUE_RUNNER_FACTORY)
+      .useValue(vi.fn().mockResolvedValue(queueRunner))
+      .compile();
     modulesToClose.push(moduleRef);
 
     const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
@@ -134,7 +147,10 @@ describe("AppModule Bootstrap", () => {
   it("should fail fast and throw initialization error when database connection is dead during startup", async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(QUEUE_RUNNER_FACTORY)
+      .useValue(vi.fn().mockResolvedValue(queueRunner))
+      .compile();
     modulesToClose.push(moduleRef);
 
     const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
