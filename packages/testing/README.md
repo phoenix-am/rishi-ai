@@ -2,6 +2,13 @@
 
 Shared test configurations, runner wrappers, and custom Vitest assertions for Rishi AI.
 
+| Metadata                  | Value                                              |
+| :------------------------ | :------------------------------------------------- |
+| **Lifecycle**             | Reference                                          |
+| **Implementation Status** | Partially Implemented — minimal shared helper only |
+| **Current Authority**     | Package source and public API                      |
+| **Last Verified**         | 2026-07-31                                         |
+
 ## Responsibilities
 
 - Houses test runner setups, custom assertions, mock utilities, and path alias resolvers.

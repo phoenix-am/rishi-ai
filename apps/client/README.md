@@ -1,25 +1,25 @@
 # `apps/client`
 
-The frontend application client for Rishi AI.
+The React 19 and Vite browser application for Rishi AI.
 
-## Responsibilities
+## Current State
 
-- Render the main content production editor, workflow dashboards, and asset panels.
-- **Must never own:** Raw backend file writing, background task orchestration, or credential hashing algorithms.
+The application builds and renders a static scaffold. It does not yet provide a usable customer workflow, document editor, authentication flow, asset interface, or production dashboard.
 
-## Styling & Theme Architecture
+## Intended Responsibility
 
-- **Framework:** React + Vite + TypeScript.
-- **Styling System:** Tailwind CSS v4 (configured CSS-first in `src/index.css`).
-- **UI Base:** shadcn/ui configuration with custom CSS theme tokens in `components.json`.
+- Present project and workflow state received from the server.
+- Provide the approved content-production workspace and review experience.
+- Consume public server APIs and event streams.
+- Keep credentials, persistence, background execution, and business authorization on the server.
 
-## Dependencies
+Intended responsibility is not evidence of implementation. See [CURRENT_STATE.md](../../.docs/CURRENT_STATE.md) and [TDD-021](../../.docs/tdds/TDD-021_Client_View_App.md).
 
-- `@rishi/domain`
-- `@rishi/shared`
-- `react`
-- `react-dom`
-- `lucide-react`
-- `@radix-ui/react-slot`
-- `tailwindcss` (v4)
-- `@tailwindcss/vite`
+## Technology
+
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+
+The application entry point is `src/main.tsx`; the current shell is defined in `src/App.tsx`.

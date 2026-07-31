@@ -1,26 +1,26 @@
 # `apps/server`
 
-The backend application bootstrap shell using NestJS and the Fastify adapter.
+The NestJS 11 and Fastify server application for Rishi AI.
 
-## Responsibilities
+## Current Responsibility
 
-- Eager configuration validations and process bootstrap control.
-- Expose NestJS dependency injection context resolving `@rishi/database`, `@rishi/logger`, and `@rishi/config`.
-- **Must never own:** Business services, routers, API controllers, or ORM schemas during the initialization phase.
+- Bootstrap configuration, logging, database access, validation, security, API versioning, Swagger, request context, response envelopes, and exception handling.
+- Implement authentication and workspace authorization.
+- Expose creator, project, content-asset, workflow-definition, and workflow-run APIs.
+- Host AI provider adapters and workflow lifecycle streaming.
+- Compose domain and infrastructure packages through NestJS dependency injection.
 
-## Dependencies
+The complete customer production workflow is not yet connected. Workflow-run creation persists a run but does not currently guarantee execution through the workflow engine.
 
-- `@rishi/config`
-- `@rishi/database`
-- `@rishi/domain`
-- `@rishi/events`
-- `@rishi/logger`
-- `@rishi/shared`
-- `@nestjs/common`
-- `@nestjs/core`
-- `@nestjs/platform-fastify`
-- `fastify`
+## Boundaries
 
-## Public API
+- Reuse public APIs from `@rishi/*` packages.
+- Keep persistence schemas and repositories in `@rishi/database`.
+- Keep framework-independent domain contracts in `@rishi/domain`.
+- Enforce authentication, workspace isolation, validation, and secret-safe logging at application boundaries.
 
-The main entry point is `src/main.ts` which runs the Fastify bootstrap cycle.
+See [CURRENT_STATE.md](../../.docs/CURRENT_STATE.md) for verified capability status.
+
+## Entry Point
+
+`src/main.ts` starts the application. `src/app.module.ts` is the application composition root.

@@ -9,13 +9,17 @@
 | **Status** | Frozen |
 | **Last Updated** | 2026-07-16 |
 | **Owner** | Rishi AI Founder & CTO |
+| **Lifecycle** | Current |
+| **Current Authority** | Level 2 — Product requirements |
+| **Review Status** | Product-scope amendment requires Product Owner approval |
+| **Last Verified** | 2026-07-31 |
 | **Change Summary** | Frozen Baseline incorporating validation strategy, pipeline stages, progressive disclosure organization, block architecture, passwordless security, and data snapshot rules. |
 
 ---
 
 ## Traceability & Alignment
-* **Parent Document:** [ENGINEERING_CONSTITUTION.md](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/ENGINEERING_CONSTITUTION.md) (Establishes core vision, constraints, and architecture philosophy)
-* **Downstream Target:** [Domain Model Specification (DMS)](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/DOMAIN_MODEL_SPECIFICATION.md) (Defines logical models and states from these requirements)
+* **Parent Document:** [ENGINEERING_CONSTITUTION.md](ENGINEERING_CONSTITUTION.md) (Establishes core vision, constraints, and architecture philosophy)
+* **Downstream Target:** [Domain Model Specification (DMS)](DOMAIN_MODEL_SPECIFICATION.md) (Defines logical models and states from these requirements)
 
 ---
 

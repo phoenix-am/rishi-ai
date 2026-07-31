@@ -8,8 +8,13 @@
 | **Module Name** | QueueModule |
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
+| **Lifecycle** | Reference |
+| **Implementation Status** | Deferred |
+| **Owner** | Unassigned |
+| **Current Authority** | Level 9 — Technical design reference |
+| **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 4: Asynchronous Task Engine (Module 4.1) |
-| **Exact Prerequisites** | [TDD-003](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-003_Transaction_Module.md) (TransactionModule), [TDD-004](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-004_Database_Module.md) (DatabaseModule) |
+| **Exact Prerequisites** | [TDD-003](TDD-003_Transaction_Module.md) (TransactionModule), [TDD-004](TDD-004_Database_Module.md) (DatabaseModule) |
 
 ---
 

@@ -8,8 +8,13 @@
 | **Module Name** | PromptAssemblyModule |
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
+| **Lifecycle** | Reference |
+| **Implementation Status** | Planned |
+| **Owner** | Unassigned |
+| **Current Authority** | Level 9 — Technical design reference |
+| **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 7: AI Orchestration Subsystem (Module 7.1) |
-| **Exact Prerequisites** | [TDD-010](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-010_Vector_Curation_Module.md) (VectorCurationModule), [TDD-013](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-013_Project_Memory_Module.md) (ProjectMemoryModule) |
+| **Exact Prerequisites** | [TDD-010](TDD-010_Vector_Curation_Module.md) (VectorCurationModule), [TDD-013](TDD-013_Project_Memory_Module.md) (ProjectMemoryModule) |
 
 ---
 

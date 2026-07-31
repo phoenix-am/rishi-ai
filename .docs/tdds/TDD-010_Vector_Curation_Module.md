@@ -8,8 +8,13 @@
 | **Module Name** | VectorCurationModule |
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
+| **Lifecycle** | Reference |
+| **Implementation Status** | Planned |
+| **Owner** | Unassigned |
+| **Current Authority** | Level 9 — Technical design reference |
+| **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 5: Knowledge Curation & RAG Layer (Module 5.2) |
-| **Exact Prerequisites** | [TDD-004](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-004_Database_Module.md) (DatabaseModule), [TDD-008](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-008_Queue_Module.md) (QueueModule), [TDD-009](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-009_Parsing_Module.md) (ParsingModule) |
+| **Exact Prerequisites** | [TDD-004](TDD-004_Database_Module.md) (DatabaseModule), [TDD-008](TDD-008_Queue_Module.md) (QueueModule), [TDD-009](TDD-009_Parsing_Module.md) (ParsingModule) |
 
 ---
 

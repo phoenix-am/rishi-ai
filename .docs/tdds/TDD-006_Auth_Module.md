@@ -8,8 +8,13 @@
 | **Module Name** | AuthModule |
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
+| **Lifecycle** | Reference |
+| **Implementation Status** | Partially Implemented |
+| **Owner** | Unassigned |
+| **Current Authority** | Level 9 — Technical design reference |
+| **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 3: Identity & Extensible Authorization (Module 3.1) |
-| **Exact Prerequisites** | [TDD-004](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-004_Database_Module.md) (DatabaseModule) |
+| **Exact Prerequisites** | [TDD-004](TDD-004_Database_Module.md) (DatabaseModule) |
 
 ---
 

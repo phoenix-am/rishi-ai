@@ -1,376 +1,79 @@
-# Rishi AI Engineering Rulebook v1.0
+# Rishi AI Engineering Rulebook
 
-> **Purpose**
->
-> This rulebook defines how every feature moves from idea to production.
-> The goal is to eliminate unnecessary discussions, avoid endless review loops,
-> and maximize implementation speed while maintaining quality.
->
-> This document governs the engineering process, **not the product**.
+| Metadata | Value |
+| :--- | :--- |
+| **Purpose** | Define the engineering standards applied to authorized repository work |
+| **Owner** | Product Owner |
+| **Lifecycle** | Current |
+| **Authority** | Level 9 engineering process reference |
+| **Implementation Driver** | No |
+| **Status** | Active |
+| **Last Reviewed** | 2026-07-31 |
 
----
+## 1. Authority and Scope
 
-# Rule 1 — Single Source of Truth
+The approved task contract controls the scope of one task. Product decisions, architecture decisions, implemented reality, documentation authority, and current status remain governed by [DOCUMENT_AUTHORITY.md](../DOCUMENT_AUTHORITY.md).
 
-Every piece of information must exist in only one document.
+This rulebook does not authorize product scope, architecture changes, Git operations, releases, deployments, or external communication.
 
-| Information | Source |
-|-------------|--------|
-| Business Requirements | PRD |
-| System Design | SDD |
-| Feature Design | TDD |
-| Current Feature Work | Feature Contract |
+## 2. Core Engineering Standards
 
-No document should duplicate another document.
+- Preserve the modular-monolith architecture and existing package responsibilities.
+- Follow public package APIs and dependency direction; do not import sibling internals.
+- Keep domain code independent of frameworks and persistence details.
+- Use dependency injection at application boundaries.
+- Validate structured inputs before execution.
+- Prefer deterministic behavior and explicit failure states.
+- Use structured logging without secrets or credential-bearing values.
+- Preserve transaction, tenant-isolation, and authorization boundaries.
+- Keep changes bounded to the approved task and avoid unrelated refactors.
+- Add or update tests for changed behavior.
 
----
+## 3. Work Sequence
 
-# Rule 2 — Approved Means Frozen
+For each authorized task:
 
-Once a stage is approved, it becomes frozen.
+1. Inspect the worktree and preserve unrelated changes.
+2. Read the applicable authority, current state, product requirement, ADR, architecture, and TDD material.
+3. Confirm scope, exclusions, dependencies, risks, acceptance criteria, and validation commands.
+4. Stop and report a material product or architecture conflict instead of resolving it silently.
+5. Implement the smallest compatible change through existing public boundaries.
+6. Review the resulting diff for scope, security, correctness, and documentation impact.
+7. Run every applicable validation command.
+8. Report actual changes, validation, remaining risks, and recommendations separately.
 
-The approved artifact cannot be modified unless a **Critical Blocker** is identified.
+## 4. Architecture Changes
 
----
+Follow [CHANGE_POLICY.md](../CHANGE_POLICY.md) when work changes package responsibility, dependency direction, public APIs, event contracts, schema strategy, authentication, execution, queueing, or another load-bearing architectural decision.
 
-# Rule 3 — One-Way Workflow
+Do not disguise an architectural change as cleanup or implementation detail.
 
-Features only move forward.
+## 5. Definition of Done
 
-```
-Requirements
-    ↓
-PRD
-    ↓
-SDD
-    ↓
-TDD
-    ↓
-Feature Contract
-    ↓
-Implementation Plan
-    ↓
-Implementation
-    ↓
-Testing
-    ↓
-Done
-```
+A task is complete only when:
 
-Backward movement is prohibited unless a Critical Blocker exists.
+- Approved acceptance criteria are satisfied.
+- The implementation remains within scope and package boundaries.
+- Applicable tests cover changed behavior.
+- Required validation has actually passed or failures are reported accurately.
+- Current documentation remains consistent with behavior.
+- Historical material and unrelated work remain preserved.
+- No unauthorized Git, release, deployment, or external action occurred.
 
----
+Compilation or passing tests alone are not sufficient when other acceptance criteria remain incomplete.
 
-# Rule 4 — Single Responsibility
+## 6. Validation and Reporting
 
-Every participant has exactly one responsibility.
+Use the commands defined by the repository and task contract. Never suppress failures, lower required thresholds, or claim unexecuted validation.
 
-## Product Owner
+Completion reports must distinguish:
 
-Responsible for:
+- Changes introduced by the task.
+- Pre-existing worktree changes.
+- Passed validation.
+- Warnings and failures.
+- Risks and deferred recommendations.
 
-- Requirements
-- Prioritization
-- Scope Approval
-- Final Approval
+## 7. Working Principle
 
-Not Responsible for:
-
-- Architecture
-- Implementation
-
----
-
-## Architect (Gemini)
-
-Responsible for:
-
-- System Design
-- Technical Design
-- TDD
-
-Not Responsible for:
-
-- Code
-- Implementation
-- Scope changes after approval
-
----
-
-## Implementation Engineer (Antigravity)
-
-Responsible for:
-
-- Implementation Planning
-- Feature Implementation
-
-Not Responsible for:
-
-- Architecture redesign
-- Feature expansion
-
----
-
-## Validator
-
-Responsible for:
-
-- Validation
-
-Not Responsible for:
-
-- Optimization
-- Suggestions
-- New Features
-- Architecture Improvements
-
----
-
-# Rule 5 — Validation, Not Review
-
-The implementation plan must be **validated**, not reviewed.
-
-Allowed validation questions:
-
-- Does it follow the approved TDD?
-- Does it violate the approved scope?
-- Does it introduce breaking changes?
-- Does it introduce security risks?
-- Is implementation technically impossible?
-
-Anything outside these questions is not allowed.
-
----
-
-# Rule 6 — Suggestions Never Block Development
-
-Suggestions are welcome.
-
-Suggestions never block implementation.
-
-Every suggestion must go into the Product Backlog.
-
----
-
-# Rule 7 — Only Critical Blockers Stop Development
-
-Development can only stop when one of the following exists:
-
-- Missing Requirement
-- Architecture Contradiction
-- Security Risk
-- Data Loss Risk
-- Impossible Implementation
-
-Everything else continues.
-
----
-
-# Rule 8 — Maximum Revision Count
-
-Maximum revisions allowed:
-
-| Stage | Maximum |
-|---------|---------|
-| Architecture | 2 |
-| Feature Contract | 2 |
-| Implementation Plan | 1 Validation |
-
-No unlimited review cycles.
-
----
-
-# Rule 9 — One Decision Per Stage
-
-Every stage has exactly one decision.
-
-| Stage | Decision |
-|---------|----------|
-| Architecture | Approve / Revise |
-| Feature Contract | Approve / Revise |
-| Implementation Plan | Valid / Invalid |
-| Implementation | Complete / Blocked |
-| Testing | Pass / Fail |
-
-Nothing else.
-
----
-
-# Rule 10 — No Improvements During Execution
-
-Once implementation starts, the following are prohibited:
-
-- Architecture redesign
-- Refactoring
-- Performance optimization
-- Folder restructuring
-- Feature enhancement
-- Code beautification
-
-Allowed:
-
-- Bug fixes
-- Blocking issue resolution
-
-Everything else goes to the Product Backlog.
-
----
-
-# Rule 11 — Scope Lock
-
-Scope can only be changed by the Product Owner.
-
-Scope changes are only allowed **before implementation begins**.
-
-After implementation starts:
-
-No Scope Changes.
-
----
-
-# Rule 12 — Finish Before Starting
-
-No new feature implementation begins until the current feature reaches Done.
-
-Rule:
-
-> Start Less. Finish More.
-
----
-
-# Rule 13 — Progress Over Perfection
-
-The goal is:
-
-- Not perfect documentation.
-- Not perfect architecture.
-- Not perfect implementation.
-
-The goal is:
-
-**Deliver completed, working features.**
-
----
-
-# Rule 14 — AI Authority Boundaries
-
-Every AI must stay inside its responsibility.
-
-Architect cannot redesign implementation.
-
-Implementation Engineer cannot redesign architecture.
-
-Validator cannot introduce new requirements.
-
-Product Owner owns all final decisions.
-
----
-
-# Rule 15 — Approved Stages Cannot Be Reopened
-
-An approved stage cannot be reopened because:
-
-- someone found a better idea
-- someone found a cleaner implementation
-- someone suggested an optimization
-
-Approved stages can only be reopened for Critical Blockers.
-
----
-
-# Rule 16 — Product Backlog
-
-The following items never stop implementation:
-
-- Improvements
-- Optimizations
-- Future Enhancements
-- Better UX Ideas
-- Better Architecture Ideas
-- Better Folder Structure
-- Better Naming
-
-These items must be moved into the Product Backlog.
-
----
-
-# Rule 17 — Automatic Backlog Management
-
-If an improvement, optimization, refactoring opportunity,
-or future enhancement is identified during implementation
-or validation:
-
-1. It must NOT block the current feature.
-
-2. It must automatically be appended to BACKLOG.md.
-
-3. Development must continue immediately.
-
-No approval is required unless the suggestion changes
-the current feature scope.
-
----
-
-# Daily Engineering Workflow
-
-```
-Requirement
-    ↓
-Architecture (Gemini)
-    ↓
-Product Owner Approval
-    ↓
-Feature Contract
-    ↓
-Implementation Plan (Antigravity)
-    ↓
-Validation
-    ↓
-Implementation (Antigravity)
-    ↓
-Testing
-    ↓
-Done
-```
-
----
-
-# Critical Blocker Definition
-
-A Critical Blocker is a problem that makes implementation impossible or unsafe.
-
-Examples:
-
-- Missing requirement
-- Conflicting architecture
-- Security vulnerability
-- Data corruption risk
-- Breaking API contract
-- Impossible implementation
-
-Anything else is **not** a Critical Blocker.
-
----
-
-# Validation Checklist
-
-The validator may only answer the following questions:
-
-- Does the Implementation Plan follow the approved Feature Contract?
-- Does it follow the approved TDD?
-- Does it violate the approved Scope?
-- Does it violate Security requirements?
-- Does it introduce Breaking Changes?
-
-If all answers are acceptable:
-
-STATUS = VALID
-
-Implementation begins immediately.
-
----
-
-# Golden Principle
-
-> Every stage exists to enable the next stage,
-> not to perfect itself.
+Planning describes intent. Executable evidence describes reality. Engineering work changes reality only within explicit authorization.

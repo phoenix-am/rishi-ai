@@ -22,6 +22,6 @@ A clear and concise description of what you want to happen.
 
 A clear and concise description of any alternative solutions or features you've considered.
 
-## Alignment with Constitution
+## Product and Authority Alignment
 
-Explain how this feature aligns with the **Engineering Constitution** (especially regarding cost limits, modularity, and context preservation).
+Explain how this request aligns with the approved Product Requirements Document and current documentation authority. The Engineering Constitution may provide historical product and engineering philosophy but does not amend product scope.

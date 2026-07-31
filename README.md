@@ -1,95 +1,68 @@
 # Rishi AI
 
-Content Production Operating System for research-intensive creators.
+Rishi AI is a Content Production Operating System for research-intensive creators. It preserves project context and structured production state across research, knowledge organization, writing, review, and delivery workflows.
 
-## Overview
+The repository is a private TypeScript modular monolith. Repository evidence, not roadmap language, determines what is currently implemented.
 
-Rishi AI is a modular monolith designed to preserve creative context across the entire scriptwriting, research, and media production lifecycle.
+## Current State
 
-## Architectural Dependency Boundaries
+- `apps/server`: NestJS 11 application using Fastify. It includes authentication, workspace authorization, creator, project, content-asset, workflow, AI-adapter, streaming, and platform-foundation modules. The complete customer workflow is not yet connected.
+- `apps/client`: React 19 and Vite application. It currently provides a buildable static shell rather than a usable production interface.
+- `packages/`: Shared domain and infrastructure packages for configuration, logging, transactions, persistence, contracts, events, and testing.
+- `docker/`: Local PostgreSQL 16 and pgvector infrastructure.
 
-```text
-                 @rishi/shared (Zero dependencies)
-                      ▲
-                      │
-               @rishi/domain (Depends only on shared)
-                      ▲
-                      │
-               @rishi/events (Depends only on domain)
-
-
- @rishi/config (Zero dependencies) ─────► @rishi/logger
-                                               ▲
-                                               │
-                                       @rishi/transaction
-                                               ▲
-                                               │
-                                        @rishi/database
-
-
-apps/server (Depends on: config, logger, database, events, domain)
-
-apps/client (Depends on: domain)
-```
-
-## Workspace Structure
-
-- **`apps/`**: Applications (`client` React web app, `server` NestJS REST server).
-- **`packages/`**: Monolith subsystems (`shared`, `domain`, `events`, `auth`, `config`, `logger`, `transaction`, `database`, `testing`).
-- **`configs/`**: Reusable configurations (ESLint, Prettier, TypeScript, Vitest, commitlint).
-- **`docs/`**: Governance documents and Architecture Decision Records (ADRs).
-- **`docker/`**: Local PostgreSQL 16 + pgvector container configs.
+See [CURRENT_STATE.md](.docs/CURRENT_STATE.md) for the last verified implementation snapshot and [DOCUMENT_INDEX.md](.docs/DOCUMENT_INDEX.md) for documentation navigation.
 
 ## Prerequisites
 
-- **Node.js**: `^22.0.0` (Locked in `.nvmrc`)
-- **pnpm**: `^10.0.0` (Locked in `package.json`)
-- **Docker**: For running the local database instance.
+- Node.js 22
+- pnpm 10
+- Docker for the local PostgreSQL service
 
-## Quick Start
+## Setup
 
-1. **Bootstrap Workspace**:
-   Install dependencies and build TypeScript packages:
+```bash
+pnpm install --frozen-lockfile
+pnpm run db:up
+pnpm run build
+pnpm run dev
+```
 
-   ```bash
-   pnpm bootstrap
-   ```
+Environment variables are documented with safe placeholders in `.env.example`.
 
-2. **Spin Up Local Database**:
-   Starts PostgreSQL with pgvector:
+## Validation
 
-   ```bash
-   pnpm run db:up
-   ```
+```bash
+pnpm run doctor
+pnpm format:check
+pnpm lint
+pnpm build
+pnpm typecheck
+pnpm test
+pnpm audit --prod --audit-level high
+```
 
-3. **Start Development Servers**:
-   Launch backend and frontend concurrent dev runners:
-   ```bash
-   pnpm dev
-   ```
+Run only the checks applicable to a task while working, and run the complete required validation contract before declaring that task complete.
 
-## Development Commands
+## Repository Layout
 
-| Command              | Action                                                         |
-| :------------------- | :------------------------------------------------------------- |
-| `pnpm run build`     | Compiles all packages and apps in topological order            |
-| `pnpm run dev`       | Spins up backend and frontend development servers concurrently |
-| `pnpm run typecheck` | Validates TypeScript compilation across all packages           |
-| `pnpm run lint`      | Runs ESLint and validates package boundaries                   |
-| `pnpm run format`    | Standardizes codebase spacing and style using Prettier         |
-| `pnpm run test`      | Executes Vitest unit tests                                     |
-| `pnpm doctor`        | Runs repository diagnostic audits                              |
+```text
+apps/       Executable client and server applications
+packages/   Public workspace packages
+configs/    Shared TypeScript, lint, format, test, and commit configuration
+.docs/      Product, architecture, design, governance, status, and history
+docker/     Local database infrastructure
+scripts/    Workspace setup, cleanup, and repository diagnostics
+```
 
-## Phase 2 Boundaries & Deferrals
+## Engineering Guidance
 
-Phase 2 focuses strictly on laying down the core technical foundation and infrastructure packages. To preserve scope isolation, full application-level wiring has been intentionally deferred to subsequent implementation phases and is not part of the Phase 2 acceptance criteria. This includes:
+Before changing implementation:
 
-- NestJS dependency injection integration for `DatabaseService` and `TransactionManager` inside `apps/server`.
-- Global middleware setup for HTTP request correlation IDs.
-- Transaction interceptors or decorators for automatic business flow transaction boundaries.
-- Dedicated health check endpoints (e.g. mapping `DatabaseService.ping()`).
-- Implementation of domain-specific database schemas, migrations, or authentication token services.
+1. Read [DOCUMENT_AUTHORITY.md](.docs/DOCUMENT_AUTHORITY.md).
+2. Read [CURRENT_STATE.md](.docs/CURRENT_STATE.md).
+3. Follow the approved task contract.
+4. Read the applicable PRD, ADRs, architecture references, and TDDs through [DOCUMENT_INDEX.md](.docs/DOCUMENT_INDEX.md).
+5. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and the [Engineering Rulebook](.docs/engineering/ENGINEERING_RULEBOOK.md).
 
-## Monorepo Governance
-
-Review [MONOREPO_GUIDE.md](MONOREPO_GUIDE.md) and [CONTRIBUTING.md](CONTRIBUTING.md) before writing code or adding packages.
+Cross-package imports must use public package APIs. Packages must not import applications, and circular dependencies are prohibited.

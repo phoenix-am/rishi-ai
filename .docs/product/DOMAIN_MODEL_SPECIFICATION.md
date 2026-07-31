@@ -9,13 +9,17 @@
 | **Status** | Active Working Spec |
 | **Last Updated** | 2026-07-16 |
 | **Owner** | Rishi AI Founder & CTO |
+| **Lifecycle** | Reference |
+| **Current Authority** | Level 4 — Intended domain architecture where approved and non-superseded |
+| **Implementation Status** | Partially Implemented |
+| **Last Verified** | 2026-07-31 |
 | **Change Summary** | Initial logical modeling baseline formalizing logical domains, aggregates, state transitions, and rules. |
 
 ---
 
 ## Traceability & Alignment
-* **Parent Document:** [Product Requirements Document (PRD)](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/PRODUCT_REQUIREMENTS_DOCUMENT.md) (Derives business rules and validation scope)
-* **Downstream Target:** [System Design Document (SDD)](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/SYSTEM_DESIGN_DOCUMENT.md) (Determines physical schema mapping and ORM boundaries)
+* **Parent Document:** [Product Requirements Document (PRD)](PRODUCT_REQUIREMENTS_DOCUMENT.md) (Derives business rules and validation scope)
+* **Downstream Target:** [System Design Document (SDD)](SYSTEM_DESIGN_DOCUMENT.md) (Determines physical schema mapping and ORM boundaries)
 
 ---
 

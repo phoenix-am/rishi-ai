@@ -1,5 +1,12 @@
 # Security Policy
 
+| Metadata          | Value                                                                     |
+| :---------------- | :------------------------------------------------------------------------ |
+| **Lifecycle**     | Current                                                                   |
+| **Owner**         | Product Owner / Security Owner                                            |
+| **Status**        | Reporting address and response-time commitment require owner confirmation |
+| **Last Verified** | 2026-07-31                                                                |
+
 ## Supported Versions
 
 Only the current master/main branch receives security updates.

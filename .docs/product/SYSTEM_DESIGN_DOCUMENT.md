@@ -7,6 +7,10 @@
 | **Status** | Frozen |
 | **Last Updated** | 2026-07-16 |
 | **Owner** | Rishi AI Founder & CTO |
+| **Lifecycle** | Reference |
+| **Current Authority** | Level 4 — Intended system architecture where approved and non-superseded |
+| **Implementation Status** | Partially Implemented |
+| **Last Verified** | 2026-07-31 |
 | **Change Summary** | Initial structural framework and skeleton directory mapping future design spaces. |
 
 ## Version 1.1.0 — Frozen Baseline

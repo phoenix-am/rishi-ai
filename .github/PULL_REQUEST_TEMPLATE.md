@@ -21,6 +21,7 @@ List which monorepo package or app is affected:
 - [ ] `packages/testing`
 - [ ] `apps/server`
 - [ ] `apps/client`
+- [ ] Documentation only
 
 ## Checklists
 
@@ -28,3 +29,5 @@ List which monorepo package or app is affected:
 - [ ] Modified code matches Prettier style guidelines.
 - [ ] All package boundary rules are respected.
 - [ ] Tests run and pass successfully.
+- [ ] Applicable build, typecheck, security audit, and documentation checks were run and reported.
+- [ ] Unrelated worktree changes were preserved.

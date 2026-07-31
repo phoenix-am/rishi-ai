@@ -8,8 +8,13 @@
 | **Module Name** | ParsingModule |
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
+| **Lifecycle** | Reference |
+| **Implementation Status** | Planned |
+| **Owner** | Unassigned |
+| **Current Authority** | Level 9 — Technical design reference |
+| **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 5: Knowledge Curation & RAG Layer (Module 5.1) |
-| **Exact Prerequisites** | [TDD-005](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-005_Storage_Module.md) (StorageModule), [TDD-007](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/tdds/TDD-007_Authorization_Module.md) (AuthorizationModule) |
+| **Exact Prerequisites** | [TDD-005](TDD-005_Storage_Module.md) (StorageModule), [TDD-007](TDD-007_Authorization_Module.md) (AuthorizationModule) |
 
 ---
 

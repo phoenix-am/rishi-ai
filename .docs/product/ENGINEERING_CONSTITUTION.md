@@ -1545,3 +1545,11 @@ Instead:
 Do not allow the implementation to drift away from this document.
 
 The implementation should always reflect the latest approved version of this Engineering Constitution.
+
+---
+
+## Governance Amendment — 2026-07-31
+
+The historical body above is preserved unchanged as the founding product and engineering philosophy.
+
+For current documentation authority, ownership, lifecycle, supersession, and conflict resolution, [DOCUMENT_AUTHORITY.md](../DOCUMENT_AUTHORITY.md) is the governing document. Where the historical body describes itself as the repository's single source of truth or assigns document precedence, those governance statements are superseded by `DOCUMENT_AUTHORITY.md`. Product requirements remain governed by the approved PRD and Product Owner decisions; implemented reality remains governed by source code, public APIs, schemas, tests, and the verified current-state process.

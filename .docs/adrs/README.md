@@ -6,7 +6,7 @@ This directory serves as the log for all load-bearing technical and architectura
 
 ## 1. Purpose & Logging Mandate
 
-As defined in the **[Engineering Constitution](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/ENGINEERING_CONSTITUTION.md#architectural-decision-records-adr)**:
+As defined in the **[Engineering Constitution](../product/ENGINEERING_CONSTITUTION.md#architectural-decision-records-adr)**:
 * Major technical decisions should never rely on memory.
 * Every significant architectural decision must be documented.
 * This creates a clear historical trail that makes future maintenance, technology migrations, and onboarding significantly easier.
@@ -25,11 +25,12 @@ As defined in the **[Engineering Constitution](file:///c:/Users/Anmol/Desktop/ri
 
 | ADR ID | Decision Name | Status | Date | Summary |
 | :--- | :--- | :--- | :--- | :--- |
-| **ADR-000** | [ADR Repository Setup](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/adrs/README.md) | **APPROVED** | 2026-07-16 | Standardizes the decision log structure and templates. |
-| **ADR-001** | [Configuration Management Strategy](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/adrs/ADR-001_configuration_management.md) | **APPROVED** | 2026-07-17 | Enforces strict schemas and idempotent config singletons. |
-| **ADR-002** | [Logger Architecture & Encapsulation](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/adrs/ADR-002_logger_architecture.md) | **APPROVED** | 2026-07-17 | Hides Pino implementation and externalizes correlation contexts. |
-| **ADR-003** | [Transaction Context Propagation Strategy](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/adrs/ADR-003_transaction_context_propagation.md) | **APPROVED** | 2026-07-17 | Establishes generic ALS tracking and REQUIRED nested propagation policy. |
-| **ADR-004** | [Lazy Database Connection & Transaction Context Integration](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/adrs/ADR-004_lazy_database_connection.md) | **APPROVED** | 2026-07-17 | Enforces lazy initialization, pool cleanup, and transactional bindings. |
+| **ADR-000** | [ADR Repository Setup](README.md) | **APPROVED** | 2026-07-16 | Standardizes the decision log structure and templates. |
+| **ADR-001** | [Configuration Management Strategy](ADR-001_configuration_management.md) | **APPROVED** | 2026-07-17 | Enforces strict schemas and idempotent config singletons. |
+| **ADR-002** | [Logger Architecture & Encapsulation](ADR-002_logger_architecture.md) | **APPROVED** | 2026-07-17 | Hides Pino implementation and externalizes correlation contexts. |
+| **ADR-003** | [Transaction Context Propagation Strategy](ADR-003_transaction_context_propagation.md) | **APPROVED** | 2026-07-17 | Establishes generic ALS tracking and REQUIRED nested propagation policy. |
+| **ADR-004** | [Lazy Database Connection & Transaction Context Integration](ADR-004_lazy_database_connection.md) | **APPROVED** | 2026-07-17 | Enforces lazy initialization, pool cleanup, and transactional bindings. |
+| **ADR-005** | [Authentication & Identity Foundation](ADR-005_authentication_identity_foundation.md) | **APPROVED** | 2026-07-19 | Establishes passwordless identity, session, and workspace-isolation foundations. |
 
 ---
 
@@ -52,7 +53,7 @@ All future ADRs must employ the following markdown template:
 
 ## 1. Context & Problem Statement
 
-Describe the context prompting this decision. Explain the problem, constraints, or opportunities we are addressing. Ensure it links directly to requirements in the [PRD](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/PRODUCT_REQUIREMENTS_DOCUMENT.md) or principles in the [Constitution](file:///c:/Users/Anmol/Desktop/rishi-ai/.docs/ENGINEERING_CONSTITUTION.md).
+Describe the context prompting this decision. Explain the problem, constraints, or opportunities we are addressing. Ensure it links directly to requirements in the [PRD](../product/PRODUCT_REQUIREMENTS_DOCUMENT.md) or principles in the [Constitution](../product/ENGINEERING_CONSTITUTION.md).
 
 ---
 

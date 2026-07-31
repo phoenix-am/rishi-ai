@@ -66,7 +66,8 @@ export class DatabaseService {
     try {
       await this.db.execute(sql`SELECT 1`);
       return true;
-    } catch {
+    } catch (e) {
+      console.error("Database ping failed with error:", e);
       return false;
     }
   }
