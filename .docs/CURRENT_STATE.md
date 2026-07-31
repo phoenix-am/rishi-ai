@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-008 completed snapshot |
+| **Status** | Verified TDD-009 completed worktree |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **Verified Implementation Revision** | `d55f6fb03029411857b2c6b1ad6ca85f4a58f68c` |
+| **Verified Implementation Revision** | Pending TDD-009 commit; validated from `3d553b7c5ab5da7cbab694ba7d7017872f83baed` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The validated TDD-008 implementation and its required status updates are committed on `main`. The repository was clean and synchronized with `origin/main` at handoff.
+The TDD-009 worktree has passed the required validation pipeline and is ready for the authorized Git workflow.
 
 ## 3. Current Implementation Status
 
@@ -53,6 +53,7 @@ The validated TDD-008 implementation and its required status updates are committ
 - TDD-006 authentication through `@rishi/auth` and `apps/server`: hashed, bounded, one-time passwordless OTPs; production SMTP delivery; Google OAuth with signed state and minimal scopes; atomic user/workspace/session provisioning; RS256 access tokens; hashed refresh sessions with conditional rotation and revocation; signed secure cookies; logout; and current-user lookup.
 - TDD-007 authorization through `apps/server`: authenticated workspace membership, explicit route-level ownership requirements, centralized resource evaluation for creators, projects, knowledge assets, content assets, workflows, and workflow runs, generic cross-tenant denial, and nested project validation for content assets.
 - TDD-008 durable background processing through `apps/server`: PostgreSQL-backed Graphile Worker dispatch, versioned payload validation, decorator-based task discovery, configurable priority and concurrency, native exponential retries, explicit fatal/permanent-failure dead-letter tracking, transactional advisory locks, structured observability, and bounded graceful shutdown with force-unlock recovery.
+- TDD-009 document parsing through `apps/server`: MIME-routed PDF, DOCX, HTML, EPUB, Markdown, and plain-text adapters; deterministic Unicode and whitespace normalization; word count, title, author, and page metadata where available; malformed-input and unsupported-media errors; bounded archive extraction; and stable module exports.
 - Creator CRUD API.
 - Workflow definition CRUD and workflow-run persistence API.
 - Project create/update/get/list API.
@@ -74,13 +75,12 @@ The validated TDD-008 implementation and its required status updates are committ
 ### Planned or Deferred
 
 - Production cloud object-storage adapter; the local storage provider and provider boundary are implemented.
-- Document upload and parsing pipeline.
+- Document upload and asynchronous ingestion orchestration; the reusable parsing module is implemented.
 - Embedding generation, vector curation, and semantic retrieval.
 - Immutable snapshot-chunk workflow and source grounding.
 - Nine-stage project state machine and active project-memory workflow.
 - Prompt-template registry, working-context compiler, and token-budget enforcement.
 - Compliance and citation validation.
-- Document parsing; TDD-009 is the next planned roadmap task.
 - Script-block application APIs and document-first editor.
 - Markdown, PDF, and DOCX export module.
 - Trial quota, subscription, and billing enforcement.
@@ -113,7 +113,7 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 - Historical status, architecture, TDD, process, and README documents remain inconsistent; S0.4 cleanup has not occurred.
 - The public workflow-run endpoint does not connect run creation to `WorkflowEngineService.execute()`.
-- No product task processors are registered yet; TDD-009 and later roadmap tasks will supply queue consumers without changing the queue boundary.
+- No product ingestion task processor is registered yet; upload, ownership validation, storage retrieval, and downstream vector curation remain outside the completed parser boundary.
 
 ### Beta blockers
 
@@ -129,13 +129,13 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository has completed **Milestone 4, TDD-008 Queue** in the authoritative engineering roadmap. TDD-009 Parsing is the next scheduled task and remains pending.
+The repository has completed **TDD-009 Parsing within Milestone 5** of the authoritative engineering roadmap. TDD-010 Vector Curation is the next scheduled task and remains pending.
 
 Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-07-31 during TDD-008:
+The current worktree was last fully validated on 2026-07-31 during TDD-009:
 
 | Command | Result |
 | :--- | :--- |
@@ -145,13 +145,11 @@ The current worktree was last fully validated on 2026-07-31 during TDD-008:
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` | Passed — 36 files and 231 tests passed; 2 files and 5 opt-in PostgreSQL tests skipped |
-| Queue PostgreSQL integration | Passed — 2 tests covering migrations, priority, retry, and advisory-lock contention |
-| Database PostgreSQL integration | Passed — 3 tests covering the complete six-migration chain, constraints, and rollback |
+| `pnpm test` | Passed — 42 files and 248 tests passed; 2 files and 5 opt-in PostgreSQL tests skipped |
 | `pnpm audit --prod --audit-level high` | Passed — no known production dependency vulnerabilities |
 | `git diff --check` | Passed |
 
-These results cover the TDD-008 worktree, including queue configuration, dispatch, task discovery, priority, retry behavior, fatal and exhausted-retry dead-letter handling, transactional advisory locks, structured worker logging, and graceful shutdown recovery. The five opt-in PostgreSQL tests are skipped by the required default command and were also executed separately against the repository's PostgreSQL 16/pgvector service; all passed.
+These results cover the TDD-009 worktree, including router behavior, all six documented formats, metadata extraction, normalization, malformed inputs, unsupported media types, archive safety, dependency injection, and public exports. The five existing opt-in PostgreSQL tests are skipped by the required default command; TDD-009 does not change database or queue persistence behavior.
 
 ## 8. Verification Process
 
