@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-009 completed worktree |
+| **Status** | Verified TDD-009 completed snapshot |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **Verified Implementation Revision** | Pending TDD-009 commit; validated from `3d553b7c5ab5da7cbab694ba7d7017872f83baed` |
+| **Verified Implementation Revision** | `afd0e7f376f2c54cd33c487846ac5384d94260be` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The TDD-009 worktree has passed the required validation pipeline and is ready for the authorized Git workflow.
+The validated TDD-009 implementation and its required status updates are committed on `main`.
 
 ## 3. Current Implementation Status
 
