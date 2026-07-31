@@ -1,9 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateKeyPairSync } from "crypto";
-import { AuthApplicationService, TokenPayload } from "./auth-application.service.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BadRequestException, UnauthorizedException } from "@nestjs/common";
+import { AuthApplicationService } from "./auth-application.service.js";
 import { InMemoryOtpStore } from "./otp.store.js";
-import { UnauthorizedException, BadRequestException } from "@nestjs/common";
-import jwt from "jsonwebtoken";
+
+function selectResult(rows: unknown[]) {
+  return {
+    from: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue(rows),
+  };
+}
 
 describe("InMemoryOtpStore", () => {
   let store: InMemoryOtpStore;
@@ -12,278 +19,205 @@ describe("InMemoryOtpStore", () => {
     store = new InMemoryOtpStore();
   });
 
-  it("should generate a 6-digit OTP code and verify it successfully", () => {
-    const email = "founder@rishi.ai";
-    const code = store.generateAndStore(email);
-
-    expect(code).toHaveLength(6);
-    expect(Number(code)).not.toBeNaN();
-
-    const verified = store.verifyAndConsume(email, code);
-    expect(verified).toBe(true);
+  afterEach(() => {
+    store.onModuleDestroy();
   });
 
-  it("should fail validation for incorrect or expired codes", () => {
-    const email = "founder@rishi.ai";
-    const code = store.generateAndStore(email);
+  it("generates a six-digit OTP, normalizes email, and prevents replay", () => {
+    const code = store.generateAndStore(" Founder@Rishi.AI ");
 
-    // Mismatch code verification
-    expect(store.verifyAndConsume(email, "000000")).toBe(false);
-
-    // Re-verify code (should fail as it gets consumed immediately on first try)
-    expect(store.verifyAndConsume(email, code)).toBe(false);
+    expect(code).toMatch(/^\d{6}$/u);
+    expect(store.verifyAndConsume("founder@rishi.ai", code)).toBe(true);
+    expect(store.verifyAndConsume("founder@rishi.ai", code)).toBe(false);
   });
 
-  it("should fail validation for expired codes", () => {
-    const email = "founder@rishi.ai";
-    const code = store.generateAndStore(email, -1000); // expired already
+  it("limits incorrect verification attempts", () => {
+    const code = store.generateAndStore("founder@rishi.ai", 60_000, 2);
 
-    expect(store.verifyAndConsume(email, code)).toBe(false);
+    expect(store.verifyAndConsume("founder@rishi.ai", "000000")).toBe(false);
+    expect(store.verifyAndConsume("founder@rishi.ai", "000001")).toBe(false);
+    expect(store.verifyAndConsume("founder@rishi.ai", code)).toBe(false);
+  });
+
+  it("rejects expired codes", () => {
+    const code = store.generateAndStore("founder@rishi.ai", -1);
+    expect(store.verifyAndConsume("founder@rishi.ai", code)).toBe(false);
   });
 });
 
 describe("AuthApplicationService", () => {
-  let authService: AuthApplicationService;
-  let mockDbService: any;
-  let mockTxManager: any;
-  let mockDrizzleClient: any;
-  let mockEmailProvider: any;
-  let mockConfigService: any;
+  let service: AuthApplicationService;
   let otpStore: InMemoryOtpStore;
-
-  // Real RSA keys for sign/verify testing (shortened for test performance)
-  // Generate valid RS256 key pair on the fly for test signature validation
-  const { privateKey: testPrivateKey, publicKey: testPublicKey } = generateKeyPairSync("rsa", {
-    modulusLength: 2048,
-    publicKeyEncoding: { type: "spki", format: "pem" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-  });
+  let database: any;
+  let transactionManager: any;
+  let emailProvider: any;
+  let tokenService: any;
 
   beforeEach(() => {
+    database = {
+      select: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+      transaction: vi.fn(),
+    };
+    transactionManager = {
+      runInTransaction: vi.fn(async (_database, work) => work()),
+    };
+    emailProvider = { sendOtp: vi.fn().mockResolvedValue(undefined) };
+    tokenService = { signToken: vi.fn().mockResolvedValue("signed-access-token") };
     otpStore = new InMemoryOtpStore();
-    mockEmailProvider = {
-      sendOtp: vi.fn().mockResolvedValue(undefined),
-    };
-    mockConfigService = {
-      get: vi.fn((key) => {
-        if (key === "JWT_PRIVATE_KEY") return testPrivateKey;
-        if (key === "JWT_PUBLIC_KEY") return testPublicKey;
-        if (key === "NODE_ENV") return "test";
-        return "";
-      }),
-    };
-
-    // Chainable Mock Builder for Drizzle
-    const selectMock = vi.fn();
-    const updateMock = vi.fn();
-    const insertMock = vi.fn();
-
-    mockDrizzleClient = {
-      transaction: vi.fn((cb) => cb(mockDrizzleClient)),
-      select: selectMock,
-      update: updateMock,
-      insert: insertMock,
-    };
-
-    mockTxManager = {
-      runInTransaction: vi.fn((_db, cb) => cb()),
-      getActiveClient: vi.fn(),
-    };
-
-    mockDbService = {
-      get client() {
-        return mockDrizzleClient;
-      },
-    };
-
-    authService = new AuthApplicationService(
-      mockDbService,
-      mockTxManager,
-      { pool: {}, db: mockDrizzleClient },
+    service = new AuthApplicationService(
+      {
+        get client() {
+          return database;
+        },
+      } as any,
+      transactionManager,
+      { db: database },
       otpStore,
-      mockEmailProvider,
-      mockConfigService
+      emailProvider,
+      tokenService
     );
   });
 
-  describe("requestOtp", () => {
-    it("should generate OTP and dispatch email", async () => {
-      const email = "test@rishi.ai";
-      await authService.requestOtp(email);
+  afterEach(() => {
+    otpStore.onModuleDestroy();
+  });
 
-      expect(mockEmailProvider.sendOtp).toHaveBeenCalledWith(
-        email,
-        expect.stringMatching(/^\d{6}$/)
-      );
-    });
+  it("normalizes an email and dispatches a six-digit OTP", async () => {
+    await service.requestPasswordlessOtp({ email: " User@Example.COM " });
+    expect(emailProvider.sendOtp).toHaveBeenCalledWith(
+      "user@example.com",
+      expect.stringMatching(/^\d{6}$/u)
+    );
+  });
 
-    it("should throw BadRequestException if email is empty", async () => {
-      await expect(authService.requestOtp("")).rejects.toThrow(BadRequestException);
+  it("rejects an empty email before dispatch", async () => {
+    await expect(service.requestPasswordlessOtp({ email: " " })).rejects.toBeInstanceOf(
+      BadRequestException
+    );
+    expect(emailProvider.sendOtp).not.toHaveBeenCalled();
+  });
+
+  it("invalidates an OTP when email delivery fails", async () => {
+    emailProvider.sendOtp.mockRejectedValueOnce(new Error("delivery failed"));
+    await expect(service.requestPasswordlessOtp({ email: "user@example.com" })).rejects.toThrow(
+      "delivery failed"
+    );
+    const undispatchedCode = emailProvider.sendOtp.mock.calls[0][1];
+    await expect(
+      service.verifyPasswordlessOtp({ email: "user@example.com", code: undispatchedCode })
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it("atomically provisions a user, workspace, membership, and session", async () => {
+    const email = "new@example.com";
+    const code = otpStore.generateAndStore(email);
+    const user = { id: "user-1", email, role: "user" };
+    const workspace = { id: "workspace-1", ownerId: user.id };
+    database.select.mockReturnValueOnce(selectResult([]));
+
+    const inserts = [
+      { values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([user]) },
+      { values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([workspace]) },
+      { values: vi.fn().mockResolvedValue(undefined) },
+      { values: vi.fn().mockResolvedValue(undefined) },
+    ];
+    inserts.forEach((builder) => database.insert.mockReturnValueOnce(builder));
+
+    const result = await service.verifyPasswordlessOtp(
+      { email, code },
+      { userAgent: "vitest", ip: "127.0.0.1" }
+    );
+
+    expect(result.accessToken).toBe("signed-access-token");
+    expect(result.refreshToken).toMatch(/^[a-f0-9]{80}$/u);
+    expect(transactionManager.runInTransaction).toHaveBeenCalledOnce();
+    expect(database.insert).toHaveBeenCalledTimes(4);
+    expect(tokenService.signToken).toHaveBeenCalledWith({
+      sub: user.id,
+      email,
+      role: "user",
     });
   });
 
-  describe("verifyOtp", () => {
-    it("should register user, default workspace, and members inside a transaction on first sign-in", async () => {
-      const email = "new-user@rishi.ai";
-      const code = otpStore.generateAndStore(email);
+  it("reuses an existing identity for OTP and Google sign-in", async () => {
+    const user = { id: "user-1", email: "existing@example.com", role: "user" };
+    const membership = { userId: user.id, workspaceId: "workspace-1", role: "owner" };
+    database.select
+      .mockReturnValueOnce(selectResult([user]))
+      .mockReturnValueOnce(selectResult([membership]))
+      .mockReturnValueOnce(selectResult([user]))
+      .mockReturnValueOnce(selectResult([membership]));
+    database.insert.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
 
-      // Setup Drizzle mocks
-      // 1. Check if user exists (returns empty array = new user)
-      // 2. Insert user returning UserEntity
-      // 3. Insert workspace returning WorkspaceEntity
-      // 4. Insert workspace member
-      // 5. Insert session
-      const userMock = { id: "user-1", email, role: "user" };
-      const workspaceMock = { id: "workspace-1", name: "Personal Workspace", ownerId: "user-1" };
+    const code = otpStore.generateAndStore(user.email);
+    await service.verifyPasswordlessOtp({ email: user.email, code });
+    await service.handleGoogleLoginCallback({ email: user.email, googleId: "google-1" });
 
-      const selectBuilder = {
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue([]), // mock user doesn't exist
-      };
-      mockDrizzleClient.select.mockReturnValue(selectBuilder);
-
-      const insertBuilder = {
-        values: vi.fn().mockReturnThis(),
-        returning: vi.fn(),
-      };
-      mockDrizzleClient.insert.mockReturnValue(insertBuilder);
-
-      // Return mock values sequentially for insertions
-      insertBuilder.returning
-        .mockResolvedValueOnce([userMock]) // for user insertion
-        .mockResolvedValueOnce([workspaceMock]); // for workspace insertion
-
-      const result = await authService.verifyOtp(email, code);
-
-      expect(result).toBeDefined();
-      expect(result.accessToken).toBeDefined();
-      expect(result.refreshToken).toBeDefined();
-
-      // Verify RS256 Access Token contents
-      const decoded = jwt.verify(result.accessToken, testPublicKey, {
-        algorithms: ["RS256"],
-      }) as TokenPayload;
-      expect(decoded.sub).toBe("user-1");
-      expect(decoded.email).toBe(email);
-      expect(decoded.role).toBe("user");
-
-      expect(mockTxManager.runInTransaction).toHaveBeenCalled();
-      expect(mockDrizzleClient.insert).toHaveBeenCalledTimes(4); // User, Workspace, Member, Session
-    });
-
-    it("should reuse existing user and issue new session", async () => {
-      const email = "existing@rishi.ai";
-      const code = otpStore.generateAndStore(email);
-
-      const existingUser = { id: "user-existing", email, role: "user", createdAt: new Date() };
-      const existingMember = { userId: "user-existing", workspaceId: "ws-1", role: "owner" };
-
-      // select builder chain mocks
-      mockDrizzleClient.select.mockImplementation(() => {
-        return {
-          from: vi.fn().mockImplementation(() => {
-            return {
-              where: vi.fn().mockImplementation(() => {
-                return {
-                  limit: vi.fn().mockImplementation(async () => {
-                    // First select query is user find: returns existing user
-                    // Second select query is memberships check: returns membership
-                    if (mockDrizzleClient.select.mock.calls.length === 1) {
-                      return [existingUser];
-                    }
-                    return [existingMember];
-                  }),
-                };
-              }),
-            };
-          }),
-        };
-      });
-
-      const insertBuilder = {
-        values: vi.fn().mockReturnThis(),
-      };
-      mockDrizzleClient.insert.mockReturnValue(insertBuilder);
-
-      const result = await authService.verifyOtp(email, code);
-
-      expect(result.accessToken).toBeDefined();
-      const decoded = jwt.verify(result.accessToken, testPublicKey, {
-        algorithms: ["RS256"],
-      }) as TokenPayload;
-      expect(decoded.sub).toBe("user-existing");
-      expect(mockDrizzleClient.insert).toHaveBeenCalledTimes(1); // Only Session insert
-    });
-
-    it("should throw UnauthorizedException for bad OTP code", async () => {
-      const email = "user@rishi.ai";
-      otpStore.generateAndStore(email);
-
-      await expect(authService.verifyOtp(email, "999999")).rejects.toThrow(UnauthorizedException);
-    });
+    expect(database.insert).toHaveBeenCalledTimes(2);
   });
 
-  describe("refreshSession & revokeSession", () => {
-    it("should rotate session and return new tokens", async () => {
-      const mockSession = {
-        id: "session-1",
-        userId: "user-1",
-        refreshTokenHash: "hash",
-        isRevoked: false,
-        expiresAt: new Date(Date.now() + 100000),
-      };
-      const mockUser = { id: "user-1", email: "user@rishi.ai", role: "user" };
+  it("rejects an invalid OTP without touching persistence", async () => {
+    await expect(
+      service.verifyPasswordlessOtp({ email: "user@example.com", code: "999999" })
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(transactionManager.runInTransaction).not.toHaveBeenCalled();
+  });
 
-      // select mock calls: 1. find session, 2. find user
-      mockDrizzleClient.select.mockImplementation(() => {
-        return {
-          from: vi.fn().mockImplementation(() => {
-            return {
-              where: vi.fn().mockImplementation(() => {
-                return {
-                  limit: vi.fn().mockImplementation(async () => {
-                    if (mockDrizzleClient.select.mock.calls.length === 1) {
-                      return [mockSession];
-                    }
-                    return [mockUser];
-                  }),
-                };
-              }),
-            };
-          }),
-        };
-      });
+  it("rotates an active refresh session exactly once", async () => {
+    const session = {
+      id: "session-1",
+      userId: "user-1",
+      expiresAt: new Date(Date.now() + 60_000),
+    };
+    const user = { id: "user-1", email: "user@example.com", role: "user" };
+    database.select
+      .mockReturnValueOnce(selectResult([session]))
+      .mockReturnValueOnce(selectResult([user]));
+    const updateBuilder = {
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      returning: vi.fn().mockResolvedValue([{ id: session.id }]),
+    };
+    database.update.mockReturnValue(updateBuilder);
+    database.insert.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
 
-      const updateBuilder = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue(undefined),
-      };
-      mockDrizzleClient.update.mockReturnValue(updateBuilder);
+    await expect(service.refreshSession("refresh-token")).resolves.toMatchObject({
+      accessToken: "signed-access-token",
+    });
+    expect(updateBuilder.returning).toHaveBeenCalledOnce();
+  });
 
-      const insertBuilder = {
-        values: vi.fn().mockReturnThis(),
-      };
-      mockDrizzleClient.insert.mockReturnValue(insertBuilder);
-
-      const result = await authService.refreshSession("old-token");
-
-      expect(result.accessToken).toBeDefined();
-      expect(result.refreshToken).toBeDefined();
-      expect(mockDrizzleClient.update).toHaveBeenCalled(); // revoked old session
-      expect(mockDrizzleClient.insert).toHaveBeenCalled(); // inserted new session
+  it("rejects a refresh token that loses the rotation race", async () => {
+    const session = {
+      id: "session-1",
+      userId: "user-1",
+      expiresAt: new Date(Date.now() + 60_000),
+    };
+    const user = { id: "user-1", email: "user@example.com", role: "user" };
+    database.select
+      .mockReturnValueOnce(selectResult([session]))
+      .mockReturnValueOnce(selectResult([user]));
+    database.update.mockReturnValue({
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      returning: vi.fn().mockResolvedValue([]),
     });
 
-    it("should revoke session on logout", async () => {
-      const updateBuilder = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue(undefined),
-      };
-      mockDrizzleClient.update.mockReturnValue(updateBuilder);
+    await expect(service.refreshSession("replayed-token")).rejects.toBeInstanceOf(
+      UnauthorizedException
+    );
+    expect(database.insert).not.toHaveBeenCalled();
+  });
 
-      await authService.revokeSession("some-token");
-
-      expect(mockDrizzleClient.update).toHaveBeenCalled();
-    });
+  it("revokes a refresh session by its hash", async () => {
+    const updateBuilder = {
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockResolvedValue(undefined),
+    };
+    database.update.mockReturnValue(updateBuilder);
+    await service.revokeSession("refresh-token");
+    expect(database.update).toHaveBeenCalledOnce();
   });
 });

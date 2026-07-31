@@ -18,6 +18,12 @@ describe("Logger Module", () => {
     JWT_PUBLIC_KEY: "mock-public",
     STORAGE_PROVIDER: "local",
     STORAGE_LOCAL_BASE_DIR: "storage",
+    EMAIL_PROVIDER: "disabled",
+    SMTP_PORT: 587,
+    SMTP_SECURE: false,
+    GOOGLE_OAUTH_ENABLED: false,
+    AUTH_SUCCESS_REDIRECT_URL: "http://localhost:5173/auth/callback",
+    AUTH_FAILURE_REDIRECT_URL: "http://localhost:5173/login?error=oauth_failed",
   };
 
   it("should output correlation ID when provider returns it", () => {

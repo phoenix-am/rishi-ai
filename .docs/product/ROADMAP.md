@@ -24,7 +24,7 @@
 - Progress updates must reflect verified implementation state only.
 - Milestone structure or dependency order may change only with architectural justification and Product Owner approval.
 
-The current execution point is **Milestone 2, TDD-005 StorageModule**, pending Product Owner review. Later partial work remains preserved but does not change the dependency gate.
+The current execution point is **Milestone 3, TDD-006 Authentication**, pending Product Owner review. Later partial work remains preserved but does not change the dependency gate.
 
 ## 2. Status Vocabulary
 
@@ -48,22 +48,24 @@ The current execution point is **Milestone 2, TDD-005 StorageModule**, pending P
 
 ## 4. Milestone 2 — Persistence
 
-**Status:** Partial — current milestone  
+**Status:** Completed
+
 **Dependencies:** Milestone 1
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
 | [TDD-004 Database](../tdds/TDD-004_Database_Module.md) | Completed | Provide the complete PostgreSQL/Drizzle schema, migration, repository, and transaction integration foundation. | TDD-003; ADR-004 | Applicable schemas, constraints, indexes, migrations, public exports, and repository boundaries are complete; migrations apply to a clean database; database-backed constraint and rollback tests pass. |
-| [TDD-005 Storage](../tdds/TDD-005_Storage_Module.md) | Partial — pending Product Owner review | Provide vendor-independent binary storage behind a public provider contract. | TDD-001; TDD-004 completion gate | Local storage behavior, provider boundaries, safe path handling, binary read/write/delete operations, and contract tests are complete without leaking storage details into business code. |
+| [TDD-005 Storage](../tdds/TDD-005_Storage_Module.md) | Completed | Provide vendor-independent binary storage behind a public provider contract. | TDD-001; TDD-004 completion gate | Local storage behavior, provider boundaries, safe path handling, binary read/write/delete operations, and contract tests are complete without leaking storage details into business code. |
 
 ## 5. Milestone 3 — Identity
 
-**Status:** Partial — gated by Milestone 2  
+**Status:** Partial — current milestone
+
 **Dependencies:** Milestone 2
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-006 Auth](../tdds/TDD-006_Auth_Module.md) | Partial | Complete passwordless identity and session management. | TDD-004; ADR-005 | OTP, production delivery, access and refresh tokens, session rotation/revocation, secure cookies, approved OAuth scope, secret-safe behavior, and focused tests satisfy ADR-005. |
+| [TDD-006 Auth](../tdds/TDD-006_Auth_Module.md) | Partial — pending Product Owner review | Complete passwordless identity and session management. | TDD-004; ADR-005 | OTP, production delivery, access and refresh tokens, session rotation/revocation, secure cookies, approved OAuth scope, secret-safe behavior, and focused tests satisfy ADR-005. |
 | [TDD-007 Authorization](../tdds/TDD-007_Authorization_Module.md) | Partial | Enforce workspace and resource ownership at every protected boundary. | TDD-006; ADR-005 | Default-deny authentication, workspace membership, nested resource ownership, cross-tenant rejection, and representative integration tests cover every protected resource type. |
 
 ## 6. Milestone 4 — Background Processing

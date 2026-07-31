@@ -1,243 +1,188 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { generateKeyPairSync } from "crypto";
-import { Test, TestingModule } from "@nestjs/testing";
-import { NestFastifyApplication, FastifyAdapter } from "@nestjs/platform-fastify";
-import { AuthModule } from "./auth.module.js";
-import { DatabaseModule } from "../../foundation/database/database.module.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { generateKeyPairSync } from "node:crypto";
+import { ValidationPipe } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
 import { ConfigService } from "@rishi/config";
+import { AuthModule } from "./auth.module.js";
+import { AuthApplicationService } from "./services/auth-application.service.js";
+import { GoogleOAuthService } from "./services/google-oauth.service.js";
+import { JwtTokenService } from "./services/jwt-token.service.js";
+import { DatabaseModule } from "../../foundation/database/database.module.js";
 import { bootstrapSecurity } from "../../foundation/bootstrap/bootstrap-security.js";
 import { bootstrapVersioning } from "../../foundation/bootstrap/bootstrap-versioning.js";
 
-describe("AuthController E2E / Integration", () => {
+describe("AuthController integration", () => {
   let app: NestFastifyApplication;
-  let mockDrizzleClient: any;
-  let mockEmailProvider: any;
-  let mockConfigService: any;
+  let authService: {
+    requestPasswordlessOtp: ReturnType<typeof vi.fn>;
+    verifyPasswordlessOtp: ReturnType<typeof vi.fn>;
+    refreshSession: ReturnType<typeof vi.fn>;
+    revokeSession: ReturnType<typeof vi.fn>;
+    getMe: ReturnType<typeof vi.fn>;
+    handleGoogleLoginCallback: ReturnType<typeof vi.fn>;
+  };
+  let googleOAuth: {
+    getAuthorizationUrl: ReturnType<typeof vi.fn>;
+    exchangeCode: ReturnType<typeof vi.fn>;
+  };
 
-  // Generate valid RS256 key pair on the fly for test signature validation
-  const { privateKey: testPrivateKey, publicKey: testPublicKey } = generateKeyPairSync("rsa", {
+  const keys = generateKeyPairSync("rsa", {
     modulusLength: 2048,
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
 
   beforeEach(async () => {
-    mockEmailProvider = {
-      sendOtp: vi.fn().mockResolvedValue(undefined),
+    authService = {
+      requestPasswordlessOtp: vi.fn().mockResolvedValue(undefined),
+      verifyPasswordlessOtp: vi.fn().mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+      }),
+      refreshSession: vi.fn().mockResolvedValue({
+        accessToken: "rotated-access-token",
+        refreshToken: "rotated-refresh-token",
+      }),
+      revokeSession: vi.fn().mockResolvedValue(undefined),
+      getMe: vi.fn().mockResolvedValue({ user: { id: "user-1" }, workspaces: [] }),
+      handleGoogleLoginCallback: vi.fn().mockResolvedValue({
+        accessToken: "google-access-token",
+        refreshToken: "google-refresh-token",
+      }),
+    };
+    googleOAuth = {
+      getAuthorizationUrl: vi.fn(
+        (state: string) => `https://accounts.google.com/o/oauth2/v2/auth?state=${state}`
+      ),
+      exchangeCode: vi.fn().mockResolvedValue({
+        googleId: "google-1",
+        email: "user@example.com",
+      }),
     };
 
-    mockConfigService = new ConfigService({
+    const config = new ConfigService({
       NODE_ENV: "test",
       PORT: "3001",
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_test",
       AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       LOG_LEVEL: "error",
-      JWT_PRIVATE_KEY: testPrivateKey,
-      JWT_PUBLIC_KEY: testPublicKey,
+      JWT_PRIVATE_KEY: keys.privateKey,
+      JWT_PUBLIC_KEY: keys.publicKey,
+      AUTH_SUCCESS_REDIRECT_URL: "http://localhost:5173/auth/callback",
+      AUTH_FAILURE_REDIRECT_URL: "http://localhost:5173/login?error=oauth_failed",
     });
 
-    const selectMock = vi.fn();
-    const updateMock = vi.fn();
-    const insertMock = vi.fn();
-
-    mockDrizzleClient = {
-      transaction: vi.fn((cb) => cb(mockDrizzleClient)),
-      select: selectMock,
-      update: updateMock,
-      insert: insertMock,
-    };
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, DatabaseModule],
+      imports: [DatabaseModule, AuthModule],
     })
       .overrideProvider(ConfigService)
-      .useValue(mockConfigService)
-      .overrideProvider("DRIZZLE_CLIENT")
-      .useValue({ pool: {}, db: mockDrizzleClient })
-      .overrideProvider("IEmailProvider")
-      .useValue(mockEmailProvider)
+      .useValue(config)
+      .overrideProvider(AuthApplicationService)
+      .useValue(authService)
+      .overrideProvider(GoogleOAuthService)
+      .useValue(googleOAuth)
       .compile();
 
     app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
     await bootstrapSecurity(app);
     bootstrapVersioning(app);
-
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });
 
   afterEach(async () => {
-    await app.close();
+    await app?.close();
   });
 
-  describe("POST /api/v1/auth/request-otp", () => {
-    it("should return 200 with success status", async () => {
-      const res = await app.inject({
-        method: "POST",
-        url: "/api/auth/request-otp", // NestJS route without version defaults to /api/auth/... since versioning is v1 by URI
-        payload: { email: "founder@rishi.ai" },
-      });
-      expect(res.statusCode).toBe(404); // without v1 version prefix it should return 404 because v1 is configured as default version URI prefix
-
-      // Wait, let's verify route matching under versioning
-      // The versioning bootstrap sets URI versioning default version to "1".
-      // So the actual URL could be `/api/v1/auth/request-otp`. Let's test `/api/v1/auth/request-otp`.
-    });
-  });
-
-  // Let's implement full endpoints tests
-  it("should complete OTP flow, issue cookie, rotate session and get profile info", async () => {
-    // 1. Request OTP
-    const reqOtpRes = await app.inject({
+  it("validates and dispatches a passwordless OTP request", async () => {
+    const response = await app.inject({
       method: "POST",
       url: "/api/v1/auth/request-otp",
-      payload: { email: "founder@rishi.ai" },
+      payload: { email: "user@example.com" },
     });
-    expect(reqOtpRes.statusCode).toBe(200);
-    expect(mockEmailProvider.sendOtp).toHaveBeenCalled();
+    expect(response.statusCode).toBe(200);
+    expect(authService.requestPasswordlessOtp).toHaveBeenCalledWith({ email: "user@example.com" });
 
-    // Extract the generated code from otpStore (we can bypass mock or query the actual store if we get it)
-    // To make it easy and self-contained, let's mock verify-otp database queries
-    const mockUser = { id: "user-999", email: "founder@rishi.ai", role: "user" };
-    const mockWorkspace = { id: "ws-999", name: "Personal Workspace", ownerId: "user-999" };
+    const invalidResponse = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/request-otp",
+      payload: { email: "not-an-email" },
+    });
+    expect(invalidResponse.statusCode).toBe(400);
+  });
 
-    const selectBuilder = {
-      from: vi.fn().mockReturnThis(),
-      innerJoin: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockImplementation(async () => {
-        // Verify OTP does: 1. check if user exists, 2. check workspace membership (if user exists), 3. getMe does check user, check workspaces list
-        // In this E2E test, we mock calls sequentially.
-        return []; // first call: user doesn't exist
-      }),
-    };
-    mockDrizzleClient.select.mockReturnValue(selectBuilder);
-
-    const insertBuilder = {
-      values: vi.fn().mockReturnThis(),
-      returning: vi.fn().mockImplementation(() => {
-        return [mockUser]; // first returning: UserEntity
-      }),
-    };
-    mockDrizzleClient.insert.mockReturnValue(insertBuilder);
-
-    // Mock insert returning WorkspaceEntity on second call
-    insertBuilder.returning
-      .mockResolvedValueOnce([mockUser])
-      .mockResolvedValueOnce([mockWorkspace]);
-
-    // Get the OTP code sent to Email Provider mock
-    const code = mockEmailProvider.sendOtp.mock.calls[0][1];
-
-    // 2. Verify OTP
-    const verifyRes = await app.inject({
+  it("issues and rotates a signed HttpOnly refresh cookie", async () => {
+    const verifyResponse = await app.inject({
       method: "POST",
       url: "/api/v1/auth/verify-otp",
-      payload: { email: "founder@rishi.ai", code },
+      payload: { email: "user@example.com", code: "123456" },
     });
+    expect(verifyResponse.statusCode).toBe(200);
+    const refreshCookie = verifyResponse.cookies.find((cookie) => cookie.name === "refresh_token");
+    expect(refreshCookie).toMatchObject({ httpOnly: true, sameSite: "Strict" });
 
-    expect(verifyRes.statusCode).toBe(200);
-    const verifyBody = JSON.parse(verifyRes.payload);
-    expect(verifyBody.accessToken).toBeDefined();
-
-    // Verify Set-Cookie header contains refresh_token
-    const cookies = verifyRes.cookies;
-    const refreshTokenCookie = cookies.find((c) => c.name === "refresh_token");
-    expect(refreshTokenCookie).toBeDefined();
-    expect(refreshTokenCookie!.value).toBeDefined();
-    expect(refreshTokenCookie!.httpOnly).toBe(true);
-
-    const activeRefreshToken = refreshTokenCookie!.value;
-
-    // Reset mocks for session refresh
-    mockDrizzleClient.select.mockReset();
-    const mockSession = {
-      id: "session-1",
-      userId: "user-999",
-      refreshTokenHash: "hash",
-      isRevoked: false,
-      expiresAt: new Date(Date.now() + 1000000),
-    };
-
-    const refreshSelectBuilder = {
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockImplementation(async () => {
-        // First select is session search
-        // Second select is user search
-        if (mockDrizzleClient.select.mock.calls.length === 1) {
-          return [mockSession];
-        }
-        return [mockUser];
-      }),
-    };
-    mockDrizzleClient.select.mockReturnValue(refreshSelectBuilder);
-
-    const updateBuilder = {
-      set: vi.fn().mockReturnThis(),
-      where: vi.fn().mockResolvedValue(undefined),
-    };
-    mockDrizzleClient.update.mockReturnValue(updateBuilder);
-
-    // 3. Refresh Session
-    const refreshRes = await app.inject({
+    const refreshResponse = await app.inject({
       method: "POST",
       url: "/api/v1/auth/refresh",
-      cookies: {
-        refresh_token: activeRefreshToken,
-      },
+      cookies: { refresh_token: refreshCookie!.value },
     });
+    expect(refreshResponse.statusCode).toBe(200);
+    expect(authService.refreshSession).toHaveBeenCalledWith(
+      "refresh-token",
+      expect.objectContaining({ ip: expect.any(String) })
+    );
+    expect(refreshResponse.cookies.find((cookie) => cookie.name === "refresh_token")).toBeDefined();
+  });
 
-    expect(refreshRes.statusCode).toBe(200);
-    const refreshBody = JSON.parse(refreshRes.payload);
-    expect(refreshBody.accessToken).toBeDefined();
-    expect(refreshRes.cookies.find((c) => c.name === "refresh_token")).toBeDefined();
-
-    // 4. Get Protected Profile Info /me
-    mockDrizzleClient.select.mockReset();
-    const profileSelectBuilder: any = {
-      from: vi.fn().mockReturnThis(),
-      innerJoin: vi.fn().mockReturnThis(),
-      where: vi.fn().mockImplementation(() => {
-        if (mockDrizzleClient.select.mock.calls.length === 1) {
-          return profileSelectBuilder;
-        }
-        return Promise.resolve([
-          { id: "ws-999", name: "founder@rishi.ai's Workspace", role: "owner" },
-        ]);
-      }),
-      limit: vi.fn().mockImplementation(async () => {
-        return [mockUser];
-      }),
-    };
-    mockDrizzleClient.select.mockReturnValue(profileSelectBuilder);
-
-    const meRes = await app.inject({
+  it("protects the current-user endpoint with an RS256 token", async () => {
+    const accessToken = await app.get(JwtTokenService).signToken({
+      sub: "user-1",
+      email: "user@example.com",
+      role: "user",
+    });
+    const response = await app.inject({
       method: "GET",
       url: "/api/v1/auth/me",
-      headers: {
-        authorization: `Bearer ${verifyBody.accessToken}`,
-      },
+      headers: { authorization: `Bearer ${accessToken}` },
     });
+    expect(response.statusCode).toBe(200);
+    expect(authService.getMe).toHaveBeenCalledWith("user-1");
 
-    expect(meRes.statusCode).toBe(200);
-    const meBody = JSON.parse(meRes.payload);
-    expect(meBody.user.id).toBe("user-999");
-    expect(meBody.workspaces.length).toBe(1);
-    expect(meBody.workspaces[0].role).toBe("owner");
+    const unauthenticated = await app.inject({ method: "GET", url: "/api/v1/auth/me" });
+    expect(unauthenticated.statusCode).toBe(401);
+  });
 
-    // 5. Logout
-    const logoutRes = await app.inject({
-      method: "POST",
-      url: "/api/v1/auth/logout",
-      cookies: {
-        refresh_token: activeRefreshToken,
-      },
+  it("uses a signed OAuth state cookie and the approved callback flow", async () => {
+    const beginResponse = await app.inject({ method: "GET", url: "/api/v1/auth/google" });
+    expect(beginResponse.statusCode).toBe(302);
+    const stateCookie = beginResponse.cookies.find((cookie) => cookie.name === "oauth_state");
+    const location = new URL(beginResponse.headers.location!);
+    const state = location.searchParams.get("state")!;
+    expect(stateCookie).toMatchObject({ httpOnly: true, sameSite: "Lax" });
+
+    const callbackResponse = await app.inject({
+      method: "GET",
+      url: `/api/v1/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      cookies: { oauth_state: stateCookie!.value },
     });
+    expect(callbackResponse.statusCode).toBe(302);
+    expect(callbackResponse.headers.location).toBe("http://localhost:5173/auth/callback");
+    expect(googleOAuth.exchangeCode).toHaveBeenCalledWith("google-code");
+    expect(authService.handleGoogleLoginCallback).toHaveBeenCalled();
+    expect(
+      callbackResponse.cookies.find((cookie) => cookie.name === "refresh_token")
+    ).toBeDefined();
+  });
 
-    expect(logoutRes.statusCode).toBe(200);
-    const clearCookieHeader = logoutRes.headers["set-cookie"];
-    // Verify that response clears the cookie (has Max-Age=0 or Expires in past)
-    expect(clearCookieHeader).toBeDefined();
+  it("redirects an invalid OAuth state without exchanging credentials", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/auth/google/callback?code=google-code&state=invalid",
+    });
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toBe("http://localhost:5173/login?error=oauth_failed");
+    expect(googleOAuth.exchangeCode).not.toHaveBeenCalled();
   });
 });

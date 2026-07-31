@@ -1,74 +1,110 @@
+import { Injectable, Inject, UnauthorizedException, BadRequestException } from "@nestjs/common";
+import { isEmail } from "class-validator";
 import {
-  Injectable,
-  Inject,
-  UnauthorizedException,
-  BadRequestException,
-  forwardRef,
-} from "@nestjs/common";
-import { DatabaseService, users, workspaces, workspaceMembers, sessions } from "@rishi/database";
-import { ConfigService } from "@rishi/config";
+  DatabaseService,
+  users,
+  workspaces,
+  workspaceMembers,
+  sessions,
+  type DatabaseClient,
+} from "@rishi/database";
 import { TransactionManager } from "@rishi/transaction";
+import {
+  EMAIL_PROVIDER,
+  type AuthTokens,
+  type DeviceMetadata,
+  type GoogleSessionPayload,
+  type IAuthService,
+  type IEmailProvider,
+  type OtpGenerationPayload,
+  type OtpVerificationPayload,
+} from "@rishi/auth";
 import { InMemoryOtpStore } from "./otp.store.js";
+import { JwtTokenService } from "./jwt-token.service.js";
+import { InvalidOtpException, OAuthCallbackException } from "../auth.exceptions.js";
 
 import { eq, and } from "drizzle-orm";
 import { randomBytes, createHash } from "crypto";
-import jwt from "jsonwebtoken";
 
-export interface TokenPayload {
+export interface TokenPayload extends Record<string, unknown> {
   sub: string;
   email: string;
   role: string;
 }
 
 @Injectable()
-export class AuthApplicationService {
+export class AuthApplicationService implements IAuthService {
   constructor(
     @Inject(DatabaseService) private readonly dbService: DatabaseService,
     @Inject(TransactionManager) private readonly txManager: TransactionManager,
-    @Inject("DRIZZLE_CLIENT") private readonly drizzleClient: any,
-    @Inject(forwardRef(() => InMemoryOtpStore)) private readonly otpStore: InMemoryOtpStore,
-    @Inject("IEmailProvider") private readonly emailProvider: any,
-    @Inject(ConfigService) private readonly configService: ConfigService
+    @Inject("DRIZZLE_CLIENT") private readonly drizzleClient: { db: DatabaseClient },
+    @Inject(InMemoryOtpStore) private readonly otpStore: InMemoryOtpStore,
+    @Inject(EMAIL_PROVIDER) private readonly emailProvider: IEmailProvider,
+    @Inject(JwtTokenService) private readonly tokenService: JwtTokenService
   ) {}
 
   /**
    * Generates a passwordless OTP and sends it via the email provider.
    */
-  public async requestOtp(email: string): Promise<void> {
-    const normalized = email.trim().toLowerCase();
-    if (!normalized) {
-      throw new BadRequestException("Email address is required.");
+  public async requestPasswordlessOtp(payload: OtpGenerationPayload): Promise<void> {
+    const normalized = payload.email.trim().toLowerCase();
+    if (!isEmail(normalized) || normalized.length > 254) {
+      throw new BadRequestException("A valid email address is required.");
     }
     const code = this.otpStore.generateAndStore(normalized);
-    await this.emailProvider.sendOtp(normalized, code);
+    try {
+      await this.emailProvider.sendOtp(normalized, code);
+    } catch (error) {
+      this.otpStore.delete(normalized);
+      throw error;
+    }
   }
 
   /**
    * Verifies the OTP, registers/retrieves the user, initializes their default workspace,
    * creates a new session, and returns the tokens.
    */
-  public async verifyOtp(
-    email: string,
-    code: string,
-    deviceMetadata: Record<string, any> = {}
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const normalized = email.trim().toLowerCase();
-    const isValid = this.otpStore.verifyAndConsume(normalized, code);
+  public async verifyPasswordlessOtp(
+    payload: OtpVerificationPayload,
+    deviceMetadata: DeviceMetadata = {}
+  ): Promise<AuthTokens> {
+    const normalized = payload.email.trim().toLowerCase();
+    if (!isEmail(normalized) || normalized.length > 254 || !/^\d{6}$/u.test(payload.code)) {
+      throw new InvalidOtpException();
+    }
+    const isValid = this.otpStore.verifyAndConsume(normalized, payload.code);
 
     if (!isValid) {
-      throw new UnauthorizedException("Invalid or expired OTP verification code.");
+      throw new InvalidOtpException();
     }
 
-    // Run User & Workspace initialization atomically
-    const user = await this.txManager.runInTransaction(this.drizzleClient.db, async () => {
-      let dbUser = await this.findUserByEmail(normalized);
+    return this.authenticateIdentity(normalized, deviceMetadata);
+  }
+
+  public async handleGoogleLoginCallback(
+    payload: GoogleSessionPayload,
+    deviceMetadata: DeviceMetadata = {}
+  ): Promise<AuthTokens> {
+    const normalizedEmail = payload.email.trim().toLowerCase();
+    if (!payload.googleId || !isEmail(normalizedEmail) || normalizedEmail.length > 254) {
+      throw new OAuthCallbackException();
+    }
+    return this.authenticateIdentity(normalizedEmail, deviceMetadata);
+  }
+
+  private async authenticateIdentity(
+    normalizedEmail: string,
+    deviceMetadata: DeviceMetadata
+  ): Promise<AuthTokens> {
+    return this.txManager.runInTransaction<AuthTokens>(this.drizzleClient.db, async () => {
+      let dbUser = await this.findUserByEmail(normalizedEmail);
 
       if (!dbUser) {
         // Register new user
         const [insertedUser] = await this.dbService.client
           .insert(users)
           .values({
-            email: normalized,
+            email: normalizedEmail,
             role: "user",
           })
           .returning();
@@ -81,7 +117,7 @@ export class AuthApplicationService {
         const [insertedWorkspace] = await this.dbService.client
           .insert(workspaces)
           .values({
-            name: `${normalized}'s Workspace`,
+            name: `${normalizedEmail}'s Workspace`,
             ownerId: insertedUser.id,
           })
           .returning();
@@ -111,7 +147,7 @@ export class AuthApplicationService {
           const [insertedWorkspace] = await this.dbService.client
             .insert(workspaces)
             .values({
-              name: `${normalized}'s Workspace`,
+              name: `${normalizedEmail}'s Workspace`,
               ownerId: dbUser.id,
             })
             .returning();
@@ -126,11 +162,8 @@ export class AuthApplicationService {
         }
       }
 
-      return dbUser;
+      return this.createSession(dbUser.id, dbUser.email, dbUser.role, deviceMetadata);
     });
-
-    // Create session and issue tokens
-    return this.createSession(user.id, user.email, user.role, deviceMetadata);
   }
 
   /**
@@ -138,15 +171,15 @@ export class AuthApplicationService {
    */
   public async refreshSession(
     refreshToken: string,
-    deviceMetadata: Record<string, any> = {}
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+    deviceMetadata: DeviceMetadata = {}
+  ): Promise<AuthTokens> {
     if (!refreshToken) {
       throw new UnauthorizedException("Refresh token is missing.");
     }
 
     const tokenHash = this.hashToken(refreshToken);
 
-    return this.txManager.runInTransaction(this.drizzleClient.db, async () => {
+    return this.txManager.runInTransaction<AuthTokens>(this.drizzleClient.db, async () => {
       // Find active session
       const [session] = await this.dbService.client
         .select()
@@ -170,10 +203,15 @@ export class AuthApplicationService {
       }
 
       // Revoke old session to support rotation
-      await this.dbService.client
+      const revokedSessions = await this.dbService.client
         .update(sessions)
         .set({ isRevoked: true })
-        .where(eq(sessions.id, session.id));
+        .where(and(eq(sessions.id, session.id), eq(sessions.isRevoked, false)))
+        .returning({ id: sessions.id });
+
+      if (revokedSessions.length !== 1) {
+        throw new UnauthorizedException("Session has already been rotated or revoked.");
+      }
 
       // Create new session and return rotated tokens
       return this.createSession(user.id, user.email, user.role, deviceMetadata);
@@ -230,27 +268,6 @@ export class AuthApplicationService {
     };
   }
 
-  /**
-   * Decodes PEM (handling Base64 format if set in environment).
-   */
-  public decodePemKey(key: string): string {
-    if (!key) {
-      return "";
-    }
-    if (key.includes("-----BEGIN")) {
-      return key;
-    }
-    try {
-      const decoded = Buffer.from(key, "base64").toString("utf-8");
-      if (decoded.includes("-----BEGIN")) {
-        return decoded;
-      }
-    } catch {
-      // Fallback if not base64 encoded
-    }
-    return key;
-  }
-
   // --- Helper Methods ---
 
   private async findUserByEmail(email: string) {
@@ -266,19 +283,11 @@ export class AuthApplicationService {
     userId: string,
     email: string,
     role: string,
-    deviceMetadata: Record<string, any>
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const privateKey = this.decodePemKey(this.configService.get("JWT_PRIVATE_KEY"));
-    if (!privateKey) {
-      throw new Error("JWT Private Key configuration is missing or invalid.");
-    }
-
+    deviceMetadata: DeviceMetadata
+  ): Promise<AuthTokens> {
     // 1. Generate access token
     const payload: TokenPayload = { sub: userId, email, role };
-    const accessToken = jwt.sign(payload, privateKey, {
-      algorithm: "RS256",
-      expiresIn: "15m",
-    });
+    const accessToken = await this.tokenService.signToken(payload);
 
     // 2. Generate refresh token
     const refreshToken = randomBytes(40).toString("hex");

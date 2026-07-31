@@ -5,7 +5,6 @@ import {
   ForbiddenException,
   BadRequestException,
 } from "@nestjs/common";
-import { generateKeyPairSync } from "crypto";
 
 // Mock NestJS createParamDecorator to expose the callback for unit testing
 vi.mock("@nestjs/common", async (importOriginal) => {
@@ -24,11 +23,11 @@ import { JwtAuthGuard } from "./jwt-auth.guard.js";
 import { WorkspaceGuard } from "./workspace.guard.js";
 import { CurrentUser } from "./current-user.decorator.js";
 import { CurrentWorkspace } from "./current-workspace.decorator.js";
-import jwt from "jsonwebtoken";
+import { JwtTokenService } from "../../modules/auth/services/jwt-token.service.js";
+import { generateKeyPairSync } from "node:crypto";
 
 describe("Security Guards and Decorators", () => {
-  // Generate valid RS256 key pair on the fly for test signature validation
-  const { privateKey: testPrivateKey, publicKey: testPublicKey } = generateKeyPairSync("rsa", {
+  const keys = generateKeyPairSync("rsa", {
     modulusLength: 2048,
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -44,7 +43,7 @@ describe("Security Guards and Decorators", () => {
         getAllAndOverride: vi.fn(),
       };
       mockConfigService = {
-        get: vi.fn(() => testPublicKey),
+        get: vi.fn((key: string) => (key === "JWT_PRIVATE_KEY" ? keys.privateKey : keys.publicKey)),
       };
       guard = new JwtAuthGuard(mockReflector, mockConfigService);
     });
@@ -66,13 +65,11 @@ describe("Security Guards and Decorators", () => {
 
     it("should successfully authenticate with a valid RS256 token", async () => {
       mockReflector.getAllAndOverride.mockReturnValue(false);
-      const token = jwt.sign(
-        { sub: "user-123", email: "user@rishi.ai", role: "admin" },
-        testPrivateKey,
-        {
-          algorithm: "RS256",
-        }
-      );
+      const token = await new JwtTokenService(mockConfigService).signToken({
+        sub: "user-123",
+        email: "user@rishi.ai",
+        role: "admin",
+      });
 
       const mockRequest = {
         headers: {

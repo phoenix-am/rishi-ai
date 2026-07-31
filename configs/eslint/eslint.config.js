@@ -129,7 +129,16 @@ export default ts.config(
             },
             {
               from: "server",
-              allow: ["config", "logger", "database", "storage", "events", "domain", "shared"],
+              allow: [
+                "auth",
+                "config",
+                "logger",
+                "database",
+                "storage",
+                "events",
+                "domain",
+                "shared",
+              ],
             },
             {
               from: "client",

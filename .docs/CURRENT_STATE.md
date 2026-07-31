@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-005 review-ready snapshot with uncommitted work |
+| **Status** | Verified TDD-006 review-ready snapshot with uncommitted work |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **HEAD** | `d935eeecd24053774f7a6f5cf6ff33d1e7c1b2c8` |
+| **HEAD** | `c4184cdd9a7d704149100997e5f5499d1bcdaafa` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The working tree is not clean. It contains the validated TDD-005 implementation and required status updates described by this snapshot. These items are not represented by the recorded HEAD commit.
+The working tree is not clean. It contains the validated TDD-006 implementation and required status updates described by this snapshot. These items are not represented by the recorded HEAD commit.
 
 ## 3. Current Implementation Status
 
@@ -50,7 +50,7 @@ The working tree is not clean. It contains the validated TDD-005 implementation 
 - TDD-005 storage foundation through `@rishi/storage`: public provider contract and injection token, service facade, validated local-provider configuration, safe portable object paths, atomic binary writes, reads, idempotent deletes, stable storage errors, and unit/integration coverage.
 - Core domain entities, value objects, repository/provider contracts, and domain events through `@rishi/domain`.
 - NestJS/Fastify bootstrap, validation, request context, response envelopes, exception handling, rate limiting, health route, Swagger support, and API versioning.
-- Passwordless OTP generation/verification mechanics, JWT access tokens, refresh sessions, signed cookies, logout, and current-user lookup.
+- TDD-006 authentication through `@rishi/auth` and `apps/server`: hashed, bounded, one-time passwordless OTPs; production SMTP delivery; Google OAuth with signed state and minimal scopes; atomic user/workspace/session provisioning; RS256 access tokens; hashed refresh sessions with conditional rotation and revocation; signed secure cookies; logout; and current-user lookup.
 - Workspace membership guard and tenant-scoped API patterns.
 - Creator CRUD API.
 - Workflow definition CRUD and workflow-run persistence API.
@@ -62,7 +62,6 @@ The working tree is not clean. It contains the validated TDD-005 implementation 
 
 ### Partially Implemented
 
-- `@rishi/auth`: public contracts exist, while the working authentication implementation lives in `apps/server`.
 - `@rishi/events`: a minimal event contract package exists; there is no complete event subsystem or durable outbox.
 - `@rishi/testing`: one shared assertion helper exists; the documented broader testing toolkit does not.
 - Database/domain support for knowledge assets, chunks, snapshots, snapshot chunks, script-block sources, script blocks, project memory, and generation-job persistence exists without the later application workflows.
@@ -83,8 +82,6 @@ The working tree is not clean. It contains the validated TDD-005 implementation 
 - Durable PostgreSQL-backed queue and worker processing; async processing is deferred in the existing status material.
 - Script-block application APIs and document-first editor.
 - Markdown, PDF, and DOCX export module.
-- Google OAuth.
-- Production email delivery.
 - Trial quota, subscription, and billing enforcement.
 - Production application deployment and repeatable migration execution.
 
@@ -102,7 +99,7 @@ The working tree is not clean. It contains the validated TDD-005 implementation 
 | `@rishi/domain` | Substantial but partially aligned with current application model |
 | `@rishi/shared` | Implemented, minimal |
 | `@rishi/events` | Partial |
-| `@rishi/auth` | Partial contract package |
+| `@rishi/auth` | TDD-006 public contracts and server authentication implementation complete |
 | `@rishi/testing` | Partial/minimal |
 
 The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`, `@rishi/tools`, or `@rishi/llms` packages.
@@ -111,7 +108,7 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ### Stabilization blockers
 
-- The worktree contains unresolved user-owned modifications and an unexplained untracked `Microsoft/` directory.
+- The worktree contains the uncommitted TDD-006 implementation described by this snapshot.
 - Historical status, architecture, TDD, process, and README documents remain inconsistent; S0.4 cleanup has not occurred.
 - The public workflow-run endpoint does not connect run creation to `WorkflowEngineService.execute()`.
 - The documented durable queue is absent, leaving workflow execution semantics unresolved.
@@ -121,7 +118,6 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 ### Beta blockers
 
 - No functional customer-facing client flow.
-- No production email delivery.
 - No minimum source-grounded research-to-script workflow.
 - No trial/paywall or billing implementation.
 - No production application deployment process.
@@ -133,13 +129,13 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository is at **Milestone 2, TDD-005 StorageModule** in the authoritative engineering roadmap. The implementation and validation are complete; Product Owner review remains the final completion gate. TDD-006 remains the next scheduled task and has not been modified by this task.
+The repository is at **Milestone 3, TDD-006 Authentication** in the authoritative engineering roadmap. Implementation and validation are complete; Product Owner review remains the final completion gate. TDD-007 Authorization is the next scheduled task and was not implemented by this task.
 
 Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-07-31 during TDD-005:
+The current worktree was last fully validated on 2026-07-31 during TDD-006:
 
 | Command | Result |
 | :--- | :--- |
@@ -149,10 +145,11 @@ The current worktree was last fully validated on 2026-07-31 during TDD-005:
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` | Passed — 25 files and 165 tests passed; 1 file and 3 opt-in PostgreSQL tests skipped |
+| `pnpm test` | Passed — 29 files and 183 tests passed; 1 file and 3 opt-in PostgreSQL tests skipped |
+| `pnpm audit --prod --audit-level high` | Passed — no known production dependency vulnerabilities |
 | `git diff --check` | Passed |
 
-These results cover the TDD-005 worktree, including provider delegation, configuration, public exports, safe-path rejection, binary persistence, atomic overwrite, reads, idempotent deletion, and filesystem error mapping. An additional opt-in PostgreSQL run passed all 168 assertions but exited unsuccessfully because TDD-004 teardown terminated a still-observed connection; no database code was changed because that defect is outside TDD-005.
+These results cover the TDD-006 worktree, including public contracts, OTP delivery and replay controls, Google OAuth state handling and verified identity, centralized RS256 token handling, refresh-session rotation, secure cookies, configuration, controller behavior, and public exports. The opt-in PostgreSQL integration tests remain skipped by the required default command; their previously recorded TDD-004 teardown risk is unchanged and no database code was modified by TDD-006.
 
 ## 8. Verification Process
 

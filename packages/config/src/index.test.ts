@@ -34,6 +34,35 @@ describe("Config Module", () => {
     expect(parsed.LOG_LEVEL).toBe("debug");
     expect(parsed.STORAGE_PROVIDER).toBe("local");
     expect(parsed.STORAGE_LOCAL_BASE_DIR).toBe("storage");
+    expect(parsed.EMAIL_PROVIDER).toBe("disabled");
+    expect(parsed.GOOGLE_OAUTH_ENABLED).toBe(false);
+  });
+
+  it("should require production email delivery configuration", () => {
+    expect(
+      () =>
+        new ConfigService({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+          AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          JWT_PRIVATE_KEY: "mock-private-key",
+          JWT_PUBLIC_KEY: "mock-public-key",
+        })
+    ).toThrow(ConfigurationValidationError);
+  });
+
+  it("should require complete Google OAuth configuration when enabled", () => {
+    expect(
+      () =>
+        new ConfigService({
+          NODE_ENV: "test",
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/rishi_ai",
+          AES_MASTER_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          JWT_PRIVATE_KEY: "mock-private-key",
+          JWT_PUBLIC_KEY: "mock-public-key",
+          GOOGLE_OAUTH_ENABLED: "true",
+        })
+    ).toThrow(ConfigurationValidationError);
   });
 
   it("should throw ConfigurationValidationError on invalid env variables", () => {

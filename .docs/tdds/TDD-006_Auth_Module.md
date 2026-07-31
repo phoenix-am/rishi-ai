@@ -7,14 +7,14 @@
 | **Document ID** | TDD-006 |
 | **Module Name** | AuthModule |
 | **Version** | v1.0.0 |
-| **Status** | IMPLEMENTATION READY |
+| **Status** | REVIEW READY |
 | **Lifecycle** | Reference |
-| **Implementation Status** | Partially Implemented |
-| **Owner** | Unassigned |
+| **Implementation Status** | Implemented |
+| **Owner** | Repository Maintainer |
 | **Current Authority** | Level 9 — Technical design reference |
 | **Last Verified** | 2026-07-31 |
 | **EEP Phase Position** | Phase 3: Identity & Extensible Authorization (Module 3.1) |
-| **Exact Prerequisites** | [TDD-004](TDD-004_Database_Module.md) (DatabaseModule) |
+| **Exact Prerequisites** | [TDD-004](TDD-004_Database_Module.md) (DatabaseModule); [ADR-005](../adrs/ADR-005_authentication_identity_foundation.md) |
 
 ---
 

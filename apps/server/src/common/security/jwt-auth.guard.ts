@@ -6,20 +6,19 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ConfigService } from "@rishi/config";
 import { IS_PUBLIC_KEY } from "./public.decorator.js";
-import jwt from "jsonwebtoken";
+import { JwtTokenService } from "../../modules/auth/services/jwt-token.service.js";
+import { ConfigService } from "@rishi/config";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  private publicKeyPem: string;
+  private readonly tokenService: JwtTokenService;
 
   constructor(
     @Inject(Reflector) private readonly reflector: Reflector,
-    @Inject(ConfigService) private readonly configService: ConfigService
+    @Inject(ConfigService) config: ConfigService
   ) {
-    const rawKey = this.configService.get("JWT_PUBLIC_KEY");
-    this.publicKeyPem = this.decodePemKey(rawKey);
+    this.tokenService = new JwtTokenService(config);
   }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -41,9 +40,14 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = jwt.verify(token, this.publicKeyPem, {
-        algorithms: ["RS256"],
-      }) as Record<string, any>;
+      const payload = await this.tokenService.verifyToken(token);
+      if (
+        typeof payload.sub !== "string" ||
+        typeof payload.email !== "string" ||
+        typeof payload.role !== "string"
+      ) {
+        throw new Error("Authentication token claims are invalid.");
+      }
 
       // Inject user context into request
       request.user = {
@@ -65,23 +69,5 @@ export class JwtAuthGuard implements CanActivate {
     }
     const [type, token] = authHeader.split(" ");
     return type === "Bearer" ? token || null : null;
-  }
-
-  private decodePemKey(key: string): string {
-    if (!key) {
-      return "";
-    }
-    if (key.includes("-----BEGIN")) {
-      return key;
-    }
-    try {
-      const decoded = Buffer.from(key, "base64").toString("utf-8");
-      if (decoded.includes("-----BEGIN")) {
-        return decoded;
-      }
-    } catch {
-      // Fallback if not base64 encoded
-    }
-    return key;
   }
 }

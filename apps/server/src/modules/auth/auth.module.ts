@@ -1,20 +1,14 @@
-import { Module, Injectable, Inject } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { APP_GUARD, Reflector } from "@nestjs/core";
+import { EMAIL_PROVIDER } from "@rishi/auth";
+import { ConfigService } from "@rishi/config";
 import { AuthController } from "./auth.controller.js";
 import { AuthApplicationService } from "./services/auth-application.service.js";
 import { InMemoryOtpStore } from "./services/otp.store.js";
-import { IEmailProvider } from "./interfaces/email-provider.interface.js";
+import { createEmailProvider } from "./services/email.providers.js";
+import { GoogleOAuthService } from "./services/google-oauth.service.js";
+import { JwtTokenService } from "./services/jwt-token.service.js";
 import { JwtAuthGuard } from "../../common/security/jwt-auth.guard.js";
-import type { ILogger } from "@rishi/logger";
-
-@Injectable()
-export class ConsoleEmailProvider implements IEmailProvider {
-  constructor(@Inject("ILogger") private readonly logger: ILogger) {}
-
-  public async sendOtp(email: string, code: string): Promise<void> {
-    this.logger.info(`[Email OTP Dispatcher] Target: ${email} | Verification Code: ${code}`);
-  }
-}
 
 @Module({
   controllers: [AuthController],
@@ -22,9 +16,16 @@ export class ConsoleEmailProvider implements IEmailProvider {
     Reflector,
     AuthApplicationService,
     InMemoryOtpStore,
+    JwtTokenService,
     {
-      provide: "IEmailProvider",
-      useClass: ConsoleEmailProvider,
+      provide: EMAIL_PROVIDER,
+      useFactory: createEmailProvider,
+      inject: [ConfigService],
+    },
+    {
+      provide: GoogleOAuthService,
+      useFactory: (config: ConfigService) => new GoogleOAuthService(config),
+      inject: [ConfigService],
     },
     // Global Guard Registration for JwtAuthGuard (Secure-by-default)
     {
@@ -32,6 +33,6 @@ export class ConsoleEmailProvider implements IEmailProvider {
       useClass: JwtAuthGuard,
     },
   ],
-  exports: [AuthApplicationService],
+  exports: [AuthApplicationService, JwtTokenService],
 })
 export class AuthModule {}

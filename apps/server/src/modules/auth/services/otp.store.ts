@@ -1,9 +1,10 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
-import { createHash, randomInt } from "crypto";
+import { createHash, randomInt, timingSafeEqual } from "crypto";
 
 interface StoredOtp {
   hash: string;
   expiresAt: Date;
+  attemptsRemaining: number;
 }
 
 @Injectable()
@@ -18,6 +19,7 @@ export class InMemoryOtpStore implements OnModuleDestroy {
       },
       5 * 60 * 1000
     );
+    this.cleanupInterval.unref();
   }
 
   public onModuleDestroy(): void {
@@ -46,19 +48,19 @@ export class InMemoryOtpStore implements OnModuleDestroy {
    * @param ttlMs - Time-to-live in milliseconds (defaults to 5 minutes)
    * @returns The raw 6-digit numeric OTP code
    */
-  public generateAndStore(email: string, ttlMs = 5 * 60 * 1000): string {
+  public generateAndStore(email: string, ttlMs = 5 * 60 * 1000, maxAttempts = 5): string {
     const normalizedEmail = this.normalize(email);
     const code = randomInt(100000, 999999).toString();
     const hash = this.hashOtp(code);
     const expiresAt = new Date(Date.now() + ttlMs);
 
-    this.otps.set(normalizedEmail, { hash, expiresAt });
+    this.otps.set(normalizedEmail, { hash, expiresAt, attemptsRemaining: maxAttempts });
     return code;
   }
 
   /**
    * Verifies the provided OTP code against the stored hash for the given email.
-   * Clears the OTP code on success or mismatch to prevent replay/brute-force attacks.
+   * Clears the OTP on success, expiry, or exhaustion of the bounded attempt count.
    *
    * @param email - Recipient email
    * @param code - Input code to verify
@@ -72,15 +74,27 @@ export class InMemoryOtpStore implements OnModuleDestroy {
       return false;
     }
 
-    // Always delete the OTP immediately to prevent replay/brute-force
-    this.otps.delete(normalizedEmail);
-
     if (Date.now() > entry.expiresAt.getTime()) {
+      this.otps.delete(normalizedEmail);
       return false;
     }
 
     const inputHash = this.hashOtp(code);
-    return inputHash === entry.hash;
+    const isMatch = timingSafeEqual(Buffer.from(inputHash, "hex"), Buffer.from(entry.hash, "hex"));
+    if (isMatch) {
+      this.otps.delete(normalizedEmail);
+      return true;
+    }
+
+    entry.attemptsRemaining -= 1;
+    if (entry.attemptsRemaining <= 0) {
+      this.otps.delete(normalizedEmail);
+    }
+    return false;
+  }
+
+  public delete(email: string): void {
+    this.otps.delete(this.normalize(email));
   }
 
   /**
