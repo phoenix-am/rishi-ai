@@ -8,6 +8,7 @@ import {
   Workflow,
   WorkflowRun,
   ContentAsset,
+  type ProjectState,
 } from "./entities.js";
 
 export const CREATOR_REPOSITORY = Symbol.for("CreatorRepository");
@@ -54,10 +55,30 @@ export interface IProjectRepository {
    */
   findById(id: string): Promise<Project | null>;
 
+  /** Resolves one project only when it belongs to the selected workspace. */
+  findByWorkspaceAndId(workspaceId: string, id: string): Promise<Project | null>;
+
+  /** Lists one stable page of projects inside a workspace. */
+  findByWorkspaceId(workspaceId: string, limit: number, offset: number): Promise<Project[]>;
+
+  /** Counts projects inside a workspace for pagination. */
+  countByWorkspaceId(workspaceId: string): Promise<number>;
+
   /**
    * Saves the project aggregate and captures transactional event queues.
    */
   save(project: Project): Promise<void>;
+
+  /** Atomically transitions state when the persisted version still matches. */
+  updateStateWithLock(
+    projectId: string,
+    workspaceId: string,
+    targetState: ProjectState,
+    previousState: Exclude<ProjectState, "archived"> | null,
+    hasStateDrift: boolean,
+    expectedVersion: number,
+    updatedAt: Date
+  ): Promise<Project | null>;
 
   /**
    * Checks if a project exists.

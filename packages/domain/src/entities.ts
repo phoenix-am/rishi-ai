@@ -21,8 +21,12 @@ export interface IProject {
   readonly workspaceId: string;
   readonly name: string;
   readonly description: string | null;
-  readonly status: string;
+  readonly status: ProjectState;
+  readonly version: number;
+  readonly previousState: Exclude<ProjectState, "archived"> | null;
+  readonly hasStateDrift: boolean;
   readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
 export type ContentAssetType = "SCRIPT" | "AUDIO" | "VIDEO" | "IMAGE";
@@ -396,9 +400,25 @@ export type ProjectState =
   | "exported"
   | "archived";
 
-/**
- * The 9-stage sequence.
- */
+const ACTIVE_PROJECT_STATES = [
+  "draft",
+  "research",
+  "knowledge_organized",
+  "working_context_generated",
+  "outline_generated",
+  "script_generated",
+  "review",
+  "exported",
+] as const satisfies readonly Exclude<ProjectState, "archived">[];
+
+export const PROJECT_STATES = [
+  ...ACTIVE_PROJECT_STATES,
+  "archived",
+] as const satisfies readonly ProjectState[];
+
+function isProjectState(value: string): value is ProjectState {
+  return PROJECT_STATES.includes(value as ProjectState);
+}
 
 /**
  * Aggregate Root governing the content production lifecycle and its aggregates.
@@ -408,27 +428,88 @@ export class Project implements IProject {
   public readonly workspaceId: string;
   public readonly name: string;
   public readonly description: string | null;
-  public readonly status: string;
+  public readonly status: ProjectState;
+  public readonly version: number;
+  public readonly previousState: Exclude<ProjectState, "archived"> | null;
+  public readonly hasStateDrift: boolean;
   public readonly createdAt: Date;
+  public readonly updatedAt: Date;
 
   constructor(
     id: string,
     workspaceId: string,
     name: string,
     description: string | null = null,
-    status: string = "draft",
-    createdAt: Date = new Date()
+    status: ProjectState = "draft",
+    createdAt: Date = new Date(),
+    version: number = 1,
+    previousState: Exclude<ProjectState, "archived"> | null = null,
+    hasStateDrift: boolean = false,
+    updatedAt: Date = createdAt
   ) {
     if (!id) throw new ValidationException("Project ID is required.");
     if (!workspaceId) throw new ValidationException("Workspace ID is required.");
-    if (!name) throw new ValidationException("Project Name is required.");
+    if (!name || !name.trim()) throw new ValidationException("Project Name is required.");
+    if (!isProjectState(status))
+      throw new ValidationException(`Invalid project state '${status}'.`);
+    if (!Number.isInteger(version) || version < 1) {
+      throw new ValidationException("Project version must be a positive integer.");
+    }
+    if (status !== "archived" && previousState !== null) {
+      throw new ValidationException("Only archived projects may retain a previous state.");
+    }
+    if (
+      status === "archived" &&
+      (!previousState || !ACTIVE_PROJECT_STATES.includes(previousState))
+    ) {
+      throw new ValidationException("Archived projects must retain a restorable active state.");
+    }
 
     this.id = id;
     this.workspaceId = workspaceId;
-    this.name = name;
-    this.description = description;
+    this.name = name.trim();
+    this.description = description?.trim() || null;
     this.status = status;
+    this.version = version;
+    this.previousState = previousState;
+    this.hasStateDrift = hasStateDrift;
     this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+
+  public transitionTo(targetState: ProjectState, transitionedAt: Date = new Date()): Project {
+    let previousState: Exclude<ProjectState, "archived"> | null = null;
+    let introducesDrift = false;
+
+    if (this.status === "archived") {
+      if (!this.previousState || targetState !== this.previousState) {
+        throw new InvalidStateTransitionException("Project", this.id, this.status, targetState);
+      }
+    } else if (targetState === "archived") {
+      previousState = this.status;
+    } else {
+      const currentIndex = ACTIVE_PROJECT_STATES.indexOf(this.status);
+      const targetIndex = ACTIVE_PROJECT_STATES.indexOf(targetState);
+      const isSequentialForward = targetIndex === currentIndex + 1;
+      const isBackward = targetIndex >= 0 && targetIndex < currentIndex;
+      if (!isSequentialForward && !isBackward) {
+        throw new InvalidStateTransitionException("Project", this.id, this.status, targetState);
+      }
+      introducesDrift = isBackward;
+    }
+
+    return new Project(
+      this.id,
+      this.workspaceId,
+      this.name,
+      this.description,
+      targetState,
+      this.createdAt,
+      this.version + 1,
+      previousState,
+      this.hasStateDrift || introducesDrift,
+      transitionedAt
+    );
   }
 }
 

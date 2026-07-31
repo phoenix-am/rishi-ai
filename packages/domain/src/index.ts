@@ -32,6 +32,8 @@ export {
   WorkingContext,
   ScriptBlock,
   Project,
+  PROJECT_STATES,
+  type ProjectState,
   ContentAsset,
   WorkflowNodeType,
   Workflow,

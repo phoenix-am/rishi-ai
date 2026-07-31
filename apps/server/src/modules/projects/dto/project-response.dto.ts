@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Project } from "@rishi/domain";
+import type { ProjectState } from "@rishi/domain";
 
 export class ProjectResponseDto {
   @ApiProperty()
@@ -15,10 +16,22 @@ export class ProjectResponseDto {
   public readonly description!: string | null;
 
   @ApiProperty()
-  public readonly status!: string;
+  public readonly status!: ProjectState;
+
+  @ApiProperty({ minimum: 1 })
+  public readonly version!: number;
+
+  @ApiProperty({ required: false, nullable: true })
+  public readonly previousState!: Exclude<ProjectState, "archived"> | null;
+
+  @ApiProperty()
+  public readonly hasStateDrift!: boolean;
 
   @ApiProperty()
   public readonly createdAt!: Date;
+
+  @ApiProperty()
+  public readonly updatedAt!: Date;
 
   public static fromDomain(project: Project): ProjectResponseDto {
     return {
@@ -27,7 +40,11 @@ export class ProjectResponseDto {
       name: project.name,
       description: project.description,
       status: project.status,
+      version: project.version,
+      previousState: project.previousState,
+      hasStateDrift: project.hasStateDrift,
       createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
     };
   }
 }

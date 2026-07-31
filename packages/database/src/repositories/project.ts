@@ -1,8 +1,9 @@
-import { IProjectRepository, Project } from "@rishi/domain";
+import type { IProjectRepository, ProjectState } from "@rishi/domain";
+import { Project } from "@rishi/domain";
 import { DatabaseService } from "../index.js";
 import { projects } from "../schema/index.js";
 import { ProjectMapper } from "../mappers.js";
-import { eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 
 export class PersistenceException extends Error {
   constructor(message: string) {
@@ -34,6 +35,38 @@ export class DrizzleProjectRepository implements IProjectRepository {
     return ProjectMapper.toDomain(projectRows[0]!);
   }
 
+  public async findByWorkspaceAndId(workspaceId: string, id: string): Promise<Project | null> {
+    const rows = await this.dbService.client
+      .select()
+      .from(projects)
+      .where(and(eq(projects.workspaceId, workspaceId), eq(projects.id, id)))
+      .limit(1);
+    return rows[0] ? ProjectMapper.toDomain(rows[0]) : null;
+  }
+
+  public async findByWorkspaceId(
+    workspaceId: string,
+    limit: number,
+    offset: number
+  ): Promise<Project[]> {
+    const rows = await this.dbService.client
+      .select()
+      .from(projects)
+      .where(eq(projects.workspaceId, workspaceId))
+      .orderBy(asc(projects.createdAt), asc(projects.id))
+      .limit(limit)
+      .offset(offset);
+    return rows.map((row) => ProjectMapper.toDomain(row));
+  }
+
+  public async countByWorkspaceId(workspaceId: string): Promise<number> {
+    const rows = await this.dbService.client
+      .select({ value: count() })
+      .from(projects)
+      .where(eq(projects.workspaceId, workspaceId));
+    return Number(rows[0]?.value ?? 0);
+  }
+
   public async save(project: Project): Promise<void> {
     const data = ProjectMapper.toPersistence(project);
 
@@ -51,11 +84,39 @@ export class DrizzleProjectRepository implements IProjectRepository {
         .set({
           name: data.name,
           description: data.description,
-          status: data.status,
-          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         })
         .where(eq(projects.id, project.id));
     }
+  }
+
+  public async updateStateWithLock(
+    projectId: string,
+    workspaceId: string,
+    targetState: ProjectState,
+    previousState: Exclude<ProjectState, "archived"> | null,
+    hasStateDrift: boolean,
+    expectedVersion: number,
+    updatedAt: Date
+  ): Promise<Project | null> {
+    const rows = await this.dbService.client
+      .update(projects)
+      .set({
+        status: targetState,
+        version: expectedVersion + 1,
+        previousState,
+        hasStateDrift,
+        updatedAt,
+      })
+      .where(
+        and(
+          eq(projects.id, projectId),
+          eq(projects.workspaceId, workspaceId),
+          eq(projects.version, expectedVersion)
+        )
+      )
+      .returning();
+    return rows[0] ? ProjectMapper.toDomain(rows[0]) : null;
   }
 
   public async exists(id: string): Promise<boolean> {

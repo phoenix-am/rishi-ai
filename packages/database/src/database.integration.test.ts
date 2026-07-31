@@ -84,7 +84,7 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
     const migrationCount = await databasePool.query<{ count: string }>(
       "SELECT count(*) FROM drizzle.__drizzle_migrations"
     );
-    expect(Number(migrationCount.rows[0]?.count)).toBe(7);
+    expect(Number(migrationCount.rows[0]?.count)).toBe(8);
   });
 
   it("enforces database constraints", async () => {
@@ -116,6 +116,12 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
       workspaceId,
       "Constraint Project",
     ]);
+    await expect(
+      databasePool.query("UPDATE projects SET version = 0 WHERE id = $1", [projectId])
+    ).rejects.toMatchObject({ code: "23514" });
+    await expect(
+      databasePool.query("UPDATE projects SET previous_state = 'draft' WHERE id = $1", [projectId])
+    ).rejects.toMatchObject({ code: "23514" });
     await databasePool.query(
       "INSERT INTO creators (id, workspace_id, name, handle) VALUES ($1, $2, $3, $4)",
       [creatorId, workspaceId, "Constraint Creator", `creator-${creatorId}`]

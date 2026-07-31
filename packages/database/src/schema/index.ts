@@ -113,9 +113,21 @@ export const projects = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     status: projectStateEnum("status").notNull().default("draft"),
+    version: integer("version").notNull().default(1),
+    previousState: projectStateEnum("previous_state"),
+    hasStateDrift: boolean("has_state_drift").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (t) => [index("idx_projects_workspace_id").on(t.workspaceId, t.id)]
+  (t) => [
+    index("idx_projects_workspace_id").on(t.workspaceId, t.id),
+    check("projects_version_positive", sql`${t.version} > 0`),
+    check("projects_name_nonempty", sql`length(trim(${t.name})) > 0`),
+    check(
+      "projects_previous_state_archived_only",
+      sql`((${t.status} = 'archived' AND ${t.previousState} IS NOT NULL AND ${t.previousState} <> 'archived') OR (${t.status} <> 'archived' AND ${t.previousState} IS NULL))`
+    ),
+  ]
 );
 
 /**

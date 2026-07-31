@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Patch,
+  Delete,
   Get,
   Body,
   Param,
@@ -21,6 +22,8 @@ import { ProjectsApplicationService } from "./services/projects-application.serv
 import { CreateProjectDto } from "./dto/create-project.dto.js";
 import { UpdateProjectDto } from "./dto/update-project.dto.js";
 import { ProjectResponseDto } from "./dto/project-response.dto.js";
+import { TransitionProjectStateDto } from "./dto/transition-project-state.dto.js";
+import { AttachProjectSnapshotDto } from "./dto/attach-project-snapshot.dto.js";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto.js";
 import { PaginationTransformPipe } from "../../common/pagination/pipes/pagination-transform.pipe.js";
 import { ApiStandardResponse, ApiPaginatedResponse } from "../../common/swagger/index.js";
@@ -62,6 +65,56 @@ export class ProjectsController {
     dto: UpdateProjectDto
   ): Promise<ProjectResponseDto> {
     return this.projectsService.update(workspace.id, id, dto);
+  }
+
+  @Patch(":id/state")
+  @RequireWorkspaceResource("project")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Transition a project lifecycle state" })
+  @ApiStandardResponse(ProjectResponseDto)
+  public async transitionState(
+    @CurrentWorkspace() workspace: { id: string },
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body(new ValidationPipe({ transform: true, expectedType: TransitionProjectStateDto }))
+    dto: TransitionProjectStateDto
+  ): Promise<ProjectResponseDto> {
+    return this.projectsService.transitionProjectState(workspace.id, id, dto);
+  }
+
+  @Post(":id/snapshots")
+  @RequireWorkspaceResource("project")
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: "Attach an immutable knowledge snapshot" })
+  public async attachSnapshot(
+    @CurrentWorkspace() workspace: { id: string },
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body(new ValidationPipe({ transform: true, expectedType: AttachProjectSnapshotDto }))
+    dto: AttachProjectSnapshotDto
+  ) {
+    return this.projectsService.attachSnapshot(workspace.id, id, dto.assetId);
+  }
+
+  @Get(":id/snapshots")
+  @RequireWorkspaceResource("project")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "List immutable knowledge snapshots attached to a project" })
+  public async listSnapshots(
+    @CurrentWorkspace() workspace: { id: string },
+    @Param("id", ParseUUIDPipe) id: string
+  ) {
+    return this.projectsService.listSnapshots(workspace.id, id);
+  }
+
+  @Delete(":id/snapshots/:snapshotId")
+  @RequireWorkspaceResource("project")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Detach an immutable knowledge snapshot from a project" })
+  public async detachSnapshot(
+    @CurrentWorkspace() workspace: { id: string },
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("snapshotId", ParseUUIDPipe) snapshotId: string
+  ): Promise<void> {
+    await this.projectsService.detachSnapshot(workspace.id, id, snapshotId);
   }
 
   @Get(":id")

@@ -11,6 +11,7 @@ import {
   Workflow,
   WorkflowRun,
 } from "@rishi/domain";
+import type { ProjectState } from "@rishi/domain";
 import type { projects } from "./schema/index.js";
 
 type PersistedProjectStatus = (typeof projects.$inferInsert)["status"];
@@ -186,8 +187,12 @@ export const ProjectMapper = {
     workspaceId: string;
     name: string;
     description: string | null;
-    status: string;
+    status: ProjectState;
+    version: number;
+    previousState: ProjectState | null;
+    hasStateDrift: boolean;
     createdAt: Date;
+    updatedAt: Date;
   }): Project {
     return new Project(
       row.id,
@@ -195,7 +200,11 @@ export const ProjectMapper = {
       row.name,
       row.description,
       row.status,
-      row.createdAt
+      row.createdAt,
+      row.version,
+      row.previousState as Exclude<ProjectState, "archived"> | null,
+      row.hasStateDrift,
+      row.updatedAt
     );
   },
 
@@ -206,7 +215,11 @@ export const ProjectMapper = {
       name: entity.name,
       description: entity.description,
       status: entity.status as PersistedProjectStatus,
+      version: entity.version,
+      previousState: entity.previousState,
+      hasStateDrift: entity.hasStateDrift,
       createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     };
   },
 };
