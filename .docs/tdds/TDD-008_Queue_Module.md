@@ -9,7 +9,7 @@
 | **Version** | v1.0.0 |
 | **Status** | IMPLEMENTATION READY |
 | **Lifecycle** | Reference |
-| **Implementation Status** | Deferred |
+| **Implementation Status** | Planned |
 | **Owner** | Unassigned |
 | **Current Authority** | Level 9 — Technical design reference |
 | **Last Verified** | 2026-07-31 |

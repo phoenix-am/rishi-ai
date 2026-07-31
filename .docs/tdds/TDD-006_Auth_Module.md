@@ -7,7 +7,7 @@
 | **Document ID** | TDD-006 |
 | **Module Name** | AuthModule |
 | **Version** | v1.0.0 |
-| **Status** | REVIEW READY |
+| **Status** | COMPLETED |
 | **Lifecycle** | Reference |
 | **Implementation Status** | Implemented |
 | **Owner** | Repository Maintainer |

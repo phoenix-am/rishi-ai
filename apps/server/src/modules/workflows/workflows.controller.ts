@@ -34,6 +34,8 @@ import { Observable, fromEvent } from "rxjs";
 import { map, takeWhile } from "rxjs/operators";
 import { StreamEventDto } from "../../common/streaming/dto/stream-event.dto.js";
 import { SseInterceptor } from "../../common/streaming/sse.interceptor.js";
+import { ResourceOwnershipGuard } from "../../common/security/resource-ownership.guard.js";
+import { RequireWorkspaceResource } from "../../common/security/authorization-resource.decorator.js";
 
 export interface WorkflowRunEventPayload {
   type: string;
@@ -51,7 +53,7 @@ export interface WorkflowRunEventPayload {
   description: "The active workspace identifier",
   required: true,
 })
-@UseGuards(JwtAuthGuard, WorkspaceGuard)
+@UseGuards(JwtAuthGuard, WorkspaceGuard, ResourceOwnershipGuard)
 @Controller("workflows")
 export class WorkflowsController {
   constructor(
@@ -73,6 +75,7 @@ export class WorkflowsController {
   }
 
   @Patch(":id")
+  @RequireWorkspaceResource("workflow")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Update an existing workflow definition in the active workspace" })
   @ApiStandardResponse(WorkflowResponseDto)
@@ -86,6 +89,7 @@ export class WorkflowsController {
   }
 
   @Get(":id")
+  @RequireWorkspaceResource("workflow")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Retrieve a workflow definition by ID" })
   @ApiStandardResponse(WorkflowResponseDto)
@@ -108,6 +112,7 @@ export class WorkflowsController {
   }
 
   @Delete(":id")
+  @RequireWorkspaceResource("workflow")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Delete a workflow definition by ID" })
   public async delete(
@@ -118,6 +123,7 @@ export class WorkflowsController {
   }
 
   @Post(":id/runs")
+  @RequireWorkspaceResource("workflow")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Trigger/run a workflow" })
   public async triggerRun(
@@ -145,6 +151,7 @@ export class WorkflowsController {
   }
 
   @Get("runs/:runId")
+  @RequireWorkspaceResource("workflow-run", "runId")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Retrieve details of a workflow run by ID" })
   public async getRun(
@@ -164,6 +171,7 @@ export class WorkflowsController {
   }
 
   @Sse(":runId/stream")
+  @RequireWorkspaceResource("workflow-run", "runId")
   @UseInterceptors(SseInterceptor)
   @ApiOperation({ summary: "Stream real-time workflow execution events" })
   public async stream(

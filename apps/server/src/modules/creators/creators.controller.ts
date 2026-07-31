@@ -24,6 +24,8 @@ import { CreatorResponseDto } from "./dto/creator-response.dto.js";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto.js";
 import { PaginationTransformPipe } from "../../common/pagination/pipes/pagination-transform.pipe.js";
 import { ApiStandardResponse, ApiPaginatedResponse } from "../../common/swagger/index.js";
+import { ResourceOwnershipGuard } from "../../common/security/resource-ownership.guard.js";
+import { RequireWorkspaceResource } from "../../common/security/authorization-resource.decorator.js";
 
 @ApiTags("Creators")
 @ApiBearerAuth()
@@ -32,7 +34,7 @@ import { ApiStandardResponse, ApiPaginatedResponse } from "../../common/swagger/
   description: "The active workspace identifier",
   required: true,
 })
-@UseGuards(JwtAuthGuard, WorkspaceGuard)
+@UseGuards(JwtAuthGuard, WorkspaceGuard, ResourceOwnershipGuard)
 @Controller("creators")
 export class CreatorsController {
   constructor(
@@ -53,6 +55,7 @@ export class CreatorsController {
   }
 
   @Patch(":id")
+  @RequireWorkspaceResource("creator")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Update an existing creator profile in the active workspace" })
   @ApiStandardResponse(CreatorResponseDto)
@@ -66,6 +69,7 @@ export class CreatorsController {
   }
 
   @Get(":id")
+  @RequireWorkspaceResource("creator")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Retrieve a creator profile by ID" })
   @ApiStandardResponse(CreatorResponseDto)

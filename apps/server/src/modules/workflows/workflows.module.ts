@@ -4,9 +4,10 @@ import { WorkflowsController } from "./workflows.controller.js";
 import { WorkflowsService } from "./services/workflows.service.js";
 import { WorkflowEngineService } from "./services/workflow-engine.service.js";
 import { ContentAssetsModule } from "../content-assets/content-assets.module.js";
+import { AuthorizationModule } from "../../common/security/authorization.module.js";
 
 @Module({
-  imports: [AiModule, ContentAssetsModule],
+  imports: [AiModule, ContentAssetsModule, AuthorizationModule],
   controllers: [WorkflowsController],
   providers: [WorkflowsService, WorkflowEngineService],
   exports: [WorkflowsService, WorkflowEngineService],

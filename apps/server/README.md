@@ -5,7 +5,7 @@ The NestJS 11 and Fastify server application for Rishi AI.
 ## Current Responsibility
 
 - Bootstrap configuration, logging, database access, validation, security, API versioning, Swagger, request context, response envelopes, and exception handling.
-- Implement passwordless OTP and Google OAuth authentication, RS256 access tokens, refresh-session rotation, and workspace authorization.
+- Implement passwordless OTP and Google OAuth authentication, RS256 access tokens, refresh-session rotation, workspace membership, and explicit resource-ownership authorization.
 - Expose creator, project, content-asset, workflow-definition, and workflow-run APIs.
 - Host AI provider adapters and workflow lifecycle streaming.
 - Compose domain and infrastructure packages through NestJS dependency injection.
@@ -18,6 +18,7 @@ The complete customer production workflow is not yet connected. Workflow-run cre
 - Keep persistence schemas and repositories in `@rishi/database`.
 - Keep framework-independent domain contracts in `@rishi/domain`.
 - Enforce authentication, workspace isolation, validation, and secret-safe logging at application boundaries.
+- Declare resource ownership requirements on protected identifier routes and retain workspace checks inside application services for defense in depth.
 
 See [CURRENT_STATE.md](../../.docs/CURRENT_STATE.md) for verified capability status.
 

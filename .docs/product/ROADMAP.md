@@ -24,7 +24,7 @@
 - Progress updates must reflect verified implementation state only.
 - Milestone structure or dependency order may change only with architectural justification and Product Owner approval.
 
-The current execution point is **Milestone 3, TDD-006 Authentication**, pending Product Owner review. Later partial work remains preserved but does not change the dependency gate.
+The current execution point is **Milestone 4, TDD-008 Queue**, pending an approved implementation task. Later partial work remains preserved but does not change the dependency gate.
 
 ## 2. Status Vocabulary
 
@@ -59,23 +59,24 @@ The current execution point is **Milestone 3, TDD-006 Authentication**, pending 
 
 ## 5. Milestone 3 — Identity
 
-**Status:** Partial — current milestone
+**Status:** Completed
 
 **Dependencies:** Milestone 2
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-006 Auth](../tdds/TDD-006_Auth_Module.md) | Partial — pending Product Owner review | Complete passwordless identity and session management. | TDD-004; ADR-005 | OTP, production delivery, access and refresh tokens, session rotation/revocation, secure cookies, approved OAuth scope, secret-safe behavior, and focused tests satisfy ADR-005. |
-| [TDD-007 Authorization](../tdds/TDD-007_Authorization_Module.md) | Partial | Enforce workspace and resource ownership at every protected boundary. | TDD-006; ADR-005 | Default-deny authentication, workspace membership, nested resource ownership, cross-tenant rejection, and representative integration tests cover every protected resource type. |
+| [TDD-006 Auth](../tdds/TDD-006_Auth_Module.md) | Completed | Complete passwordless identity and session management. | TDD-004; ADR-005 | OTP, production delivery, access and refresh tokens, session rotation/revocation, secure cookies, approved OAuth scope, secret-safe behavior, and focused tests satisfy ADR-005. |
+| [TDD-007 Authorization](../tdds/TDD-007_Authorization_Module.md) | Completed | Enforce workspace and resource ownership at every protected boundary. | TDD-006; ADR-005 | Default-deny authentication, workspace membership, nested resource ownership, cross-tenant rejection, and representative integration tests cover every protected resource type. |
 
 ## 6. Milestone 4 — Background Processing
 
-**Status:** Deferred  
+**Status:** Pending
+
 **Dependencies:** Milestones 2 and 3
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-008 Queue](../tdds/TDD-008_Queue_Module.md) | Deferred | Provide durable PostgreSQL-backed background execution. | TDD-003; TDD-004; TDD-007; Product Owner approval to resume | Dispatch, priority processing, advisory-lock serialization, retry policy, dead-letter handling, graceful shutdown/recovery, observability, and database-backed integration tests are complete. |
+| [TDD-008 Queue](../tdds/TDD-008_Queue_Module.md) | Pending | Provide durable PostgreSQL-backed background execution. | TDD-003; TDD-004; TDD-007 | Dispatch, priority processing, advisory-lock serialization, retry policy, dead-letter handling, graceful shutdown/recovery, observability, and database-backed integration tests are complete. |
 
 Milestone 5 remains blocked until TDD-008 is completed or the Product Owner explicitly approves a dependency exception.
 

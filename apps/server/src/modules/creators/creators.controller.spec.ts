@@ -10,15 +10,17 @@ import { DatabaseService } from "@rishi/database";
 import { CreatorsApplicationService } from "./services/creators-application.service.js";
 import { bootstrapSecurity } from "../../foundation/bootstrap/bootstrap-security.js";
 import { bootstrapVersioning } from "../../foundation/bootstrap/bootstrap-versioning.js";
-import { ValidationPipe } from "@nestjs/common";
+import { ForbiddenException, ValidationPipe } from "@nestjs/common";
 import { ResponseEnvelopeInterceptor } from "../../foundation/interceptors/response.interceptor.js";
 import jwt from "jsonwebtoken";
+import { AuthorizationService } from "../../common/security/authorization.service.js";
 
 describe("CreatorsController E2E / Integration", () => {
   let app: NestFastifyApplication;
   let mockDrizzleClient: any;
   let mockConfigService: any;
   let mockCreatorsService: any;
+  let mockAuthorizationService: any;
 
   // Generate valid RS256 key pair on the fly for test signature validation
   const { privateKey: testPrivateKey, publicKey: testPublicKey } = generateKeyPairSync("rsa", {
@@ -76,6 +78,9 @@ describe("CreatorsController E2E / Integration", () => {
       getById: vi.fn(),
       list: vi.fn(),
     };
+    mockAuthorizationService = {
+      assertWorkspaceResource: vi.fn().mockResolvedValue(undefined),
+    };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [CreatorsModule, DatabaseModule],
@@ -86,6 +91,8 @@ describe("CreatorsController E2E / Integration", () => {
       .useValue({ pool: {}, db: mockDrizzleClient })
       .overrideProvider(CreatorsApplicationService)
       .useValue(mockCreatorsService)
+      .overrideProvider(AuthorizationService)
+      .useValue(mockAuthorizationService)
       .compile();
 
     app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
@@ -185,6 +192,24 @@ describe("CreatorsController E2E / Integration", () => {
       const body = JSON.parse(res.payload);
       expect(body.success).toBe(true);
       expect(body.data.id).toBe("d3b07384-d113-4ec6-a5d7-ecf97e2893d5");
+    });
+
+    it("should reject a creator outside the active workspace before the controller runs", async () => {
+      mockAuthorizationService.assertWorkspaceResource.mockRejectedValueOnce(
+        new ForbiddenException("Access Denied")
+      );
+
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/v1/creators/d3b07384-d113-4ec6-a5d7-ecf97e2893d5",
+        headers: {
+          authorization: `Bearer ${testToken}`,
+          "x-workspace-id": "w-123",
+        },
+      });
+
+      expect(res.statusCode).toBe(403);
+      expect(mockCreatorsService.getById).not.toHaveBeenCalled();
     });
   });
 });

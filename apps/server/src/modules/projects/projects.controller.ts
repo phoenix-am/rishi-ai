@@ -24,11 +24,13 @@ import { ProjectResponseDto } from "./dto/project-response.dto.js";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto.js";
 import { PaginationTransformPipe } from "../../common/pagination/pipes/pagination-transform.pipe.js";
 import { ApiStandardResponse, ApiPaginatedResponse } from "../../common/swagger/index.js";
+import { ResourceOwnershipGuard } from "../../common/security/resource-ownership.guard.js";
+import { RequireWorkspaceResource } from "../../common/security/authorization-resource.decorator.js";
 
 @ApiTags("Projects")
 @ApiBearerAuth()
 @ApiHeader({ name: "x-workspace-id", required: true })
-@UseGuards(JwtAuthGuard, WorkspaceGuard)
+@UseGuards(JwtAuthGuard, WorkspaceGuard, ResourceOwnershipGuard)
 @Controller("projects")
 export class ProjectsController {
   constructor(
@@ -49,6 +51,7 @@ export class ProjectsController {
   }
 
   @Patch(":id")
+  @RequireWorkspaceResource("project")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Update an existing project" })
   @ApiStandardResponse(ProjectResponseDto)
@@ -62,6 +65,7 @@ export class ProjectsController {
   }
 
   @Get(":id")
+  @RequireWorkspaceResource("project")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Retrieve a project by ID" })
   @ApiStandardResponse(ProjectResponseDto)

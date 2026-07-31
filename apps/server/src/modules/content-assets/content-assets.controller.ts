@@ -21,11 +21,13 @@ import { CreateContentAssetDto } from "./dto/create-content-asset.dto.js";
 import { UpdateContentAssetDto } from "./dto/update-content-asset.dto.js";
 import { ContentAssetResponseDto } from "./dto/content-asset-response.dto.js";
 import { ApiStandardResponse } from "../../common/swagger/index.js";
+import { ResourceOwnershipGuard } from "../../common/security/resource-ownership.guard.js";
+import { RequireWorkspaceResource } from "../../common/security/authorization-resource.decorator.js";
 
 @ApiTags("ContentAssets")
 @ApiBearerAuth()
 @ApiHeader({ name: "x-workspace-id", required: true })
-@UseGuards(JwtAuthGuard, WorkspaceGuard)
+@UseGuards(JwtAuthGuard, WorkspaceGuard, ResourceOwnershipGuard)
 @Controller("content-assets")
 export class ContentAssetsController {
   constructor(
@@ -46,6 +48,7 @@ export class ContentAssetsController {
   }
 
   @Patch(":id")
+  @RequireWorkspaceResource("content-asset")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Update a content asset" })
   @ApiStandardResponse(ContentAssetResponseDto)
@@ -59,6 +62,7 @@ export class ContentAssetsController {
   }
 
   @Get(":id")
+  @RequireWorkspaceResource("content-asset")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Retrieve a content asset by ID" })
   @ApiStandardResponse(ContentAssetResponseDto)
@@ -70,6 +74,7 @@ export class ContentAssetsController {
   }
 
   @Get("project/:projectId")
+  @RequireWorkspaceResource("project", "projectId")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "List content assets for a project" })
   public async listByProjectId(

@@ -53,11 +53,11 @@ TDDs are frozen Level 9 design references. Their `Implementation Status` metadat
 | TDD-001 Config | [tdds/TDD-001_Config_Module.md](tdds/TDD-001_Config_Module.md) | Implemented |
 | TDD-002 Logger | [tdds/TDD-002_Logger_Module.md](tdds/TDD-002_Logger_Module.md) | Implemented |
 | TDD-003 Transaction | [tdds/TDD-003_Transaction_Module.md](tdds/TDD-003_Transaction_Module.md) | Implemented |
-| TDD-004 Database | [tdds/TDD-004_Database_Module.md](tdds/TDD-004_Database_Module.md) | Partially Implemented |
-| TDD-005 Storage | [tdds/TDD-005_Storage_Module.md](tdds/TDD-005_Storage_Module.md) | Planned |
-| TDD-006 Auth | [tdds/TDD-006_Auth_Module.md](tdds/TDD-006_Auth_Module.md) | Partially Implemented |
-| TDD-007 Authorization | [tdds/TDD-007_Authorization_Module.md](tdds/TDD-007_Authorization_Module.md) | Partially Implemented |
-| TDD-008 Queue | [tdds/TDD-008_Queue_Module.md](tdds/TDD-008_Queue_Module.md) | Deferred |
+| TDD-004 Database | [tdds/TDD-004_Database_Module.md](tdds/TDD-004_Database_Module.md) | Implemented |
+| TDD-005 Storage | [tdds/TDD-005_Storage_Module.md](tdds/TDD-005_Storage_Module.md) | Implemented |
+| TDD-006 Auth | [tdds/TDD-006_Auth_Module.md](tdds/TDD-006_Auth_Module.md) | Implemented |
+| TDD-007 Authorization | [tdds/TDD-007_Authorization_Module.md](tdds/TDD-007_Authorization_Module.md) | Implemented |
+| TDD-008 Queue | [tdds/TDD-008_Queue_Module.md](tdds/TDD-008_Queue_Module.md) | Planned |
 | TDD-009 Parsing | [tdds/TDD-009_Parsing_Module.md](tdds/TDD-009_Parsing_Module.md) | Planned |
 | TDD-010 Vector Curation | [tdds/TDD-010_Vector_Curation_Module.md](tdds/TDD-010_Vector_Curation_Module.md) | Planned |
 | TDD-011 Snapshot | [tdds/TDD-011_Snapshot_Module.md](tdds/TDD-011_Snapshot_Module.md) | Partially Implemented |
