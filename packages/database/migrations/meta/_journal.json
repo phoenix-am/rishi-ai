@@ -43,6 +43,13 @@
       "when": 1785512491932,
       "tag": "0005_tdd008_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785526049880,
+      "tag": "0006_tdd011_snapshot",
+      "breakpoints": true
     }
   ]
 }

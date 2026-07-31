@@ -149,10 +149,16 @@ export interface IKnowledgeSnapshotRepository {
    */
   findByProjectId(projectId: string): Promise<KnowledgeSnapshot[]>;
 
+  /** Resolves the one immutable snapshot link for a project and source asset. */
+  findByProjectAsset(projectId: string, assetId: string): Promise<KnowledgeSnapshot | null>;
+
   /**
    * Saves a snapshot.
    */
   save(snapshot: KnowledgeSnapshot): Promise<void>;
+
+  /** Removes a project-scoped snapshot link; snapshot content is never updated. */
+  delete(projectId: string, snapshotId: string): Promise<boolean>;
 }
 
 /**

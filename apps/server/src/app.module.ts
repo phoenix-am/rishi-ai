@@ -21,6 +21,7 @@ import { ProjectsModule } from "./modules/projects/projects.module.js";
 import { ContentAssetsModule } from "./modules/content-assets/content-assets.module.js";
 import { QueueModule } from "./common/queue/queue.module.js";
 import { ParsingModule } from "./modules/knowledge/parsing/parsing.module.js";
+import { SnapshotModule } from "./modules/knowledge/snapshot/snapshot.module.js";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ParsingModule } from "./modules/knowledge/parsing/parsing.module.js";
     ContentAssetsModule,
     QueueModule,
     ParsingModule,
+    SnapshotModule,
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([
       {

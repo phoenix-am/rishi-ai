@@ -17,6 +17,7 @@ import {
 import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import { generateKeyPairSync } from "crypto";
 import { QUEUE_RUNNER_FACTORY, QUEUE_SERVICE } from "./common/queue/queue.contracts.js";
+import { SnapshotService } from "./modules/knowledge/snapshot/index.js";
 
 const queueRunner = {
   addJob: vi.fn(),
@@ -122,6 +123,9 @@ describe("AppModule Bootstrap", () => {
 
     // 8. Durable queue abstraction
     expect(moduleRef.get(QUEUE_SERVICE)).toBeDefined();
+
+    // 9. Snapshot application boundary
+    expect(moduleRef.get(SnapshotService)).toBeDefined();
   });
 
   it("should successfully boot application context when database ping succeeds", async () => {

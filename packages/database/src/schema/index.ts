@@ -138,17 +138,27 @@ export const contentAssets = pgTable("content_assets", {
 /**
  * Database schema for Knowledge Snapshots frozen inside projects.
  */
-export const knowledgeSnapshots = pgTable("knowledge_snapshots", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id")
-    .references(() => projects.id, { onDelete: "cascade" })
-    .notNull(),
-  assetId: uuid("asset_id").references(() => knowledgeAssets.id, { onDelete: "set null" }),
-  title: text("title").notNull(),
-  capturedVersionId: integer("captured_version_id").notNull(),
-  frozenContent: text("frozen_content").notNull(),
-  attachedAt: timestamp("attached_at").defaultNow().notNull(),
-});
+export const knowledgeSnapshots = pgTable(
+  "knowledge_snapshots",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .references(() => projects.id, { onDelete: "cascade" })
+      .notNull(),
+    assetId: uuid("asset_id").references(() => knowledgeAssets.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    capturedVersionId: integer("captured_version_id").notNull(),
+    frozenContent: text("frozen_content").notNull(),
+    attachedAt: timestamp("attached_at").defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex("knowledge_snapshots_project_asset_idx").on(t.projectId, t.assetId),
+    index("idx_knowledge_snapshots_project_id").on(t.projectId, t.id),
+    check("knowledge_snapshots_version_positive", sql`${t.capturedVersionId} > 0`),
+    check("knowledge_snapshots_title_nonempty", sql`length(trim(${t.title})) > 0`),
+    check("knowledge_snapshots_content_nonempty", sql`length(trim(${t.frozenContent})) > 0`),
+  ]
+);
 
 /**
  * Immutable embedded chunk copies captured for a project snapshot.

@@ -76,13 +76,15 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
         "idx_knowledge_assets_creator_id",
         "idx_script_blocks_sort_order",
         "idx_snapshot_chunks_embedding_hnsw",
+        "idx_knowledge_snapshots_project_id",
+        "knowledge_snapshots_project_asset_idx",
       ])
     );
 
     const migrationCount = await databasePool.query<{ count: string }>(
       "SELECT count(*) FROM drizzle.__drizzle_migrations"
     );
-    expect(Number(migrationCount.rows[0]?.count)).toBe(6);
+    expect(Number(migrationCount.rows[0]?.count)).toBe(7);
   });
 
   it("enforces database constraints", async () => {
@@ -136,6 +138,14 @@ describe.runIf(integrationEnabled)("Database PostgreSQL integration", () => {
       "INSERT INTO knowledge_assets (id, creator_id, title, storage_path, status) VALUES ($1, $2, $3, $4, $5)",
       [assetId, creatorId, "Source", "source.txt", "active"]
     );
+
+    await expect(
+      databasePool.query(
+        "INSERT INTO knowledge_snapshots (project_id, asset_id, title, captured_version_id, frozen_content) VALUES ($1, $2, $3, $4, $5)",
+        [projectId, assetId, "Invalid Version", 0, "content"]
+      )
+    ).rejects.toMatchObject({ code: "23514" });
+
     await databasePool.query(
       "INSERT INTO knowledge_snapshots (id, project_id, asset_id, title, captured_version_id, frozen_content) VALUES ($1, $2, $3, $4, $5, $6)",
       [snapshotId, projectId, assetId, "Snapshot", 1, "Frozen source"]
