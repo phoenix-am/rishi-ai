@@ -30,6 +30,7 @@
     "@rishi/events": "workspace:*",
     "@rishi/logger": "workspace:*",
     "@rishi/shared": "workspace:*",
+    "@rishi/storage": "workspace:*",
     "@rishi/transaction": "workspace:*",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",

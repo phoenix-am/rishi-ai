@@ -9,6 +9,7 @@
     { "path": "packages/logger" },
     { "path": "packages/transaction" },
     { "path": "packages/database" },
+    { "path": "packages/storage" },
     { "path": "packages/testing" },
     { "path": "apps/server" },
     { "path": "apps/client" }

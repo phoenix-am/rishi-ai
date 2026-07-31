@@ -160,6 +160,7 @@ function checkTsConfigReferences() {
     "packages/logger",
     "packages/transaction",
     "packages/database",
+    "packages/storage",
     "packages/testing",
     "apps/server",
   ];

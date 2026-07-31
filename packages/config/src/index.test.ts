@@ -32,6 +32,8 @@ describe("Config Module", () => {
     expect(parsed.PORT).toBe(3000);
     expect(parsed.NODE_ENV).toBe("test");
     expect(parsed.LOG_LEVEL).toBe("debug");
+    expect(parsed.STORAGE_PROVIDER).toBe("local");
+    expect(parsed.STORAGE_LOCAL_BASE_DIR).toBe("storage");
   });
 
   it("should throw ConfigurationValidationError on invalid env variables", () => {
@@ -97,11 +99,14 @@ describe("Config Module", () => {
       LOG_LEVEL: "info",
       JWT_PRIVATE_KEY: "mock-private-key",
       JWT_PUBLIC_KEY: "mock-public-key",
+      STORAGE_PROVIDER: "local",
+      STORAGE_LOCAL_BASE_DIR: "tmp/storage-test",
     };
     const configService = new ConfigService(customEnv);
     expect(configService.get("PORT")).toBe(5000);
     expect(configService.get("DATABASE_URL")).toBe(
       "postgresql://postgres:postgres@localhost:5432/rishi_custom"
     );
+    expect(configService.get("STORAGE_LOCAL_BASE_DIR")).toBe("tmp/storage-test");
   });
 });

@@ -13,6 +13,7 @@
     { "path": "../../packages/events" },
     { "path": "../../packages/config" },
     { "path": "../../packages/logger" },
-    { "path": "../../packages/database" }
+    { "path": "../../packages/database" },
+    { "path": "../../packages/storage" }
   ]
 }

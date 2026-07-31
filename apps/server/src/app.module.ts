@@ -3,6 +3,7 @@ import { ConfigService } from "@rishi/config";
 import type { ILogger } from "@rishi/logger";
 import { DatabaseService } from "@rishi/database";
 import { ProjectWorkflowService } from "@rishi/domain";
+import { StorageModule } from "@rishi/storage";
 
 import { DatabaseModule } from "./foundation/database/database.module.js";
 import { FoundationModule } from "./foundation/foundation.module.js";
@@ -22,6 +23,7 @@ import { ContentAssetsModule } from "./modules/content-assets/content-assets.mod
 @Module({
   imports: [
     DatabaseModule, // Exports Config, Logger, TransactionManager, DB client/service and all repositories globally
+    StorageModule,
     FoundationModule, // Registers Global Interceptor & Exception Filter
     HealthModule, // Health checks endpoint
     AuthModule,

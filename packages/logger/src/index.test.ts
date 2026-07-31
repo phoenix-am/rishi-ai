@@ -16,6 +16,8 @@ describe("Logger Module", () => {
     BODY_LIMIT_BYTES: 1048576,
     JWT_PRIVATE_KEY: "mock-private",
     JWT_PUBLIC_KEY: "mock-public",
+    STORAGE_PROVIDER: "local",
+    STORAGE_LOCAL_BASE_DIR: "storage",
   };
 
   it("should output correlation ID when provider returns it", () => {

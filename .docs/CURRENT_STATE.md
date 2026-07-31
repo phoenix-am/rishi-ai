@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-004 snapshot with uncommitted work |
+| **Status** | Verified TDD-005 review-ready snapshot with uncommitted work |
 | **Snapshot Date** | 2026-07-31 |
 | **Branch** | `main` |
-| **HEAD** | `2c0fc8531b0d2f6b17f146d77122e52ca7e78377` |
+| **HEAD** | `d935eeecd24053774f7a6f5cf6ff33d1e7c1b2c8` |
 
 ## 1. Purpose and Limits
 
@@ -31,11 +31,12 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/events`
 - `packages/logger`
 - `packages/shared`
+- `packages/storage`
 - `packages/testing`
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The working tree is not clean. It contains the uncommitted authoritative roadmap and the validated TDD-004 implementation described by this snapshot. These items are not represented by the recorded HEAD commit.
+The working tree is not clean. It contains the validated TDD-005 implementation and required status updates described by this snapshot. These items are not represented by the recorded HEAD commit.
 
 ## 3. Current Implementation Status
 
@@ -46,6 +47,7 @@ The working tree is not clean. It contains the uncommitted authoritative roadmap
 - Structured Pino logging through `@rishi/logger`.
 - AsyncLocalStorage transaction propagation through `@rishi/transaction`.
 - Complete TDD-004 PostgreSQL/Drizzle foundation through `@rishi/database`: lazy connections, explicit migration execution, current schemas, constraints, indexes, pgvector columns, public exports, mappers, repositories, and database-backed migration/rollback coverage.
+- TDD-005 storage foundation through `@rishi/storage`: public provider contract and injection token, service facade, validated local-provider configuration, safe portable object paths, atomic binary writes, reads, idempotent deletes, stable storage errors, and unit/integration coverage.
 - Core domain entities, value objects, repository/provider contracts, and domain events through `@rishi/domain`.
 - NestJS/Fastify bootstrap, validation, request context, response envelopes, exception handling, rate limiting, health route, Swagger support, and API versioning.
 - Passwordless OTP generation/verification mechanics, JWT access tokens, refresh sessions, signed cookies, logout, and current-user lookup.
@@ -71,7 +73,7 @@ The working tree is not clean. It contains the uncommitted authoritative roadmap
 
 ### Planned or Deferred
 
-- File storage module and production object-storage adapter.
+- Production cloud object-storage adapter; the local storage provider and provider boundary are implemented.
 - Document upload and parsing pipeline.
 - Embedding generation, vector curation, and semantic retrieval.
 - Immutable snapshot-chunk workflow and source grounding.
@@ -96,6 +98,7 @@ The working tree is not clean. It contains the uncommitted authoritative roadmap
 | `@rishi/logger` | Implemented |
 | `@rishi/transaction` | Implemented |
 | `@rishi/database` | TDD-004 persistence foundation implemented; later application workflows remain separate roadmap work |
+| `@rishi/storage` | TDD-005 local storage implementation complete; cloud providers remain future adapters |
 | `@rishi/domain` | Substantial but partially aligned with current application model |
 | `@rishi/shared` | Implemented, minimal |
 | `@rishi/events` | Partial |
@@ -113,6 +116,7 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 - The public workflow-run endpoint does not connect run creation to `WorkflowEngineService.execute()`.
 - The documented durable queue is absent, leaving workflow execution semantics unresolved.
 - Direct content-asset creation does not verify that the supplied project belongs to the active workspace.
+- Optional PostgreSQL integration mode passes its database assertions but can report an unhandled connection-termination error during TDD-004 test teardown; the required default test command is unaffected.
 
 ### Beta blockers
 
@@ -129,13 +133,13 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository is at **Milestone 2, TDD-004 DatabaseModule** in the authoritative engineering roadmap. The implementation and validation are complete; Product Owner review remains the final completion gate. TDD-005 remains pending and has not been implemented by this task.
+The repository is at **Milestone 2, TDD-005 StorageModule** in the authoritative engineering roadmap. The implementation and validation are complete; Product Owner review remains the final completion gate. TDD-006 remains the next scheduled task and has not been modified by this task.
 
 Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-07-31 during TDD-004:
+The current worktree was last fully validated on 2026-07-31 during TDD-005:
 
 | Command | Result |
 | :--- | :--- |
@@ -145,12 +149,10 @@ The current worktree was last fully validated on 2026-07-31 during TDD-004:
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` with PostgreSQL integration enabled | Passed — 23 files, 150 tests |
-| `pnpm --filter @rishi/database exec drizzle-kit check --config drizzle.config.ts` | Passed |
-| `pnpm db:migrate` against PostgreSQL 16 with pgvector | Passed |
-| `git diff --check` | Passed with an existing line-ending warning for `packages/database/generate.cjs` |
+| `pnpm test` | Passed — 25 files and 165 tests passed; 1 file and 3 opt-in PostgreSQL tests skipped |
+| `git diff --check` | Passed |
 
-These results cover the TDD-004 worktree, including clean-database migration, constraint, vector-dimension, foreign-key restriction, and transaction rollback verification.
+These results cover the TDD-005 worktree, including provider delegation, configuration, public exports, safe-path rejection, binary persistence, atomic overwrite, reads, idempotent deletion, and filesystem error mapping. An additional opt-in PostgreSQL run passed all 168 assertions but exited unsuccessfully because TDD-004 teardown terminated a still-observed connection; no database code was changed because that defect is outside TDD-005.
 
 ## 8. Verification Process
 

@@ -49,6 +49,7 @@ export default ts.config(
         { type: "logger", pattern: "packages/logger" },
         { type: "transaction", pattern: "packages/transaction" },
         { type: "database", pattern: "packages/database" },
+        { type: "storage", pattern: "packages/storage" },
         { type: "testing", pattern: "packages/testing" },
         { type: "server", pattern: "apps/server" },
         { type: "client", pattern: "apps/client" },
@@ -72,6 +73,7 @@ export default ts.config(
                 "logger",
                 "transaction",
                 "database",
+                "storage",
                 "testing",
               ],
               allow: "src/index.ts",
@@ -118,12 +120,16 @@ export default ts.config(
               allow: ["transaction", "logger", "config", "domain", "shared"],
             },
             {
+              from: "storage",
+              allow: ["config"],
+            },
+            {
               from: "testing",
               allow: ["database", "transaction", "logger", "config", "domain", "shared"],
             },
             {
               from: "server",
-              allow: ["config", "logger", "database", "events", "domain", "shared"],
+              allow: ["config", "logger", "database", "storage", "events", "domain", "shared"],
             },
             {
               from: "client",

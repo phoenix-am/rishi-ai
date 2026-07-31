@@ -3,6 +3,7 @@ import { AppModule } from "./app.module.js";
 import { ConfigService } from "@rishi/config";
 import { TransactionManager } from "@rishi/transaction";
 import { DatabaseService } from "@rishi/database";
+import { FILE_STORAGE_PROVIDER, StorageService } from "@rishi/storage";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import {
   ProjectWorkflowService,
@@ -107,6 +108,10 @@ describe("AppModule Bootstrap", () => {
 
     // 6. Domain Services
     expect(moduleRef.get(ProjectWorkflowService)).toBeDefined();
+
+    // 7. Storage provider and facade
+    expect(moduleRef.get(FILE_STORAGE_PROVIDER)).toBeDefined();
+    expect(moduleRef.get(StorageService)).toBeDefined();
   });
 
   it("should successfully boot application context when database ping succeeds", async () => {
