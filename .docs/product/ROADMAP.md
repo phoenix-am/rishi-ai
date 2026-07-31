@@ -24,7 +24,7 @@
 - Progress updates must reflect verified implementation state only.
 - Milestone structure or dependency order may change only with architectural justification and Product Owner approval.
 
-The current execution point is **Milestone 6, TDD-012 Project Workspace**, which is partially implemented and pending an approved completion task. Later partial work remains preserved but does not change the dependency gate.
+The current execution point is **Milestone 6, TDD-013 Project Memory**, which is partially implemented and pending an approved completion task. Later partial work remains preserved but does not change the dependency gate.
 
 ## 2. Status Vocabulary
 
@@ -96,7 +96,7 @@ The current execution point is **Milestone 6, TDD-012 Project Workspace**, which
 
 | TDD | Current Status | Objective | Dependencies | Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| [TDD-012 Project Workspace](../tdds/TDD-012_Project_Workspace_Module.md) | Partial | Complete the tenant-safe project aggregate and nine-stage state machine. | TDD-007; TDD-011 | Valid transitions, rejected out-of-order transitions, optimistic locking, project ownership, snapshot association, application APIs, and focused integration tests are complete. |
+| [TDD-012 Project Workspace](../tdds/TDD-012_Project_Workspace_Module.md) | Completed | Complete the tenant-safe project aggregate and nine-stage state machine. | TDD-007; TDD-011 | Valid transitions, rejected out-of-order transitions, optimistic locking, project ownership, snapshot association, application APIs, and focused integration tests are complete. |
 | [TDD-013 Project Memory](../tdds/TDD-013_Project_Memory_Module.md) | Partial | Preserve append-only project decisions and context history. | TDD-012 | Memory records are appended transactionally, cannot be silently rewritten, remain tenant-scoped, are accessible through application boundaries, and have focused tests. |
 | [TDD-014 Script Structure](../tdds/TDD-014_Script_Structure_Module.md) | Partial | Complete ordered, lockable, source-grounded script blocks. | TDD-012 | Block lifecycle, ordering, locking, source associations, persistence, application APIs, authorization, and focused tests are complete. |
 

@@ -7,10 +7,10 @@
 | **Lifecycle** | Current |
 | **Authority** | Level 7 — Verified status |
 | **Implementation Driver** | No |
-| **Status** | Verified TDD-011 completed snapshot |
+| **Status** | Verified TDD-012 completed snapshot |
 | **Snapshot Date** | 2026-08-01 |
 | **Branch** | `main` |
-| **Verified Implementation Revision** | `a19f6ad3a6652107ca869488abe6131c977ee8e0` |
+| **Verified Implementation Revision** | `c3f51e40232033419d8b9a4e77fda6234d87476c` |
 
 ## 1. Purpose and Limits
 
@@ -36,7 +36,7 @@ Rishi AI is a private pnpm TypeScript modular monolith containing:
 - `packages/transaction`
 - PostgreSQL 16 with pgvector for local database infrastructure.
 
-The validated TDD-011 implementation and its required status updates are committed on `main`.
+The validated TDD-012 implementation and its required status updates are committed on `main`.
 
 ## 3. Current Implementation Status
 
@@ -56,6 +56,7 @@ The validated TDD-011 implementation and its required status updates are committ
 - TDD-009 document parsing through `apps/server`: MIME-routed PDF, DOCX, HTML, EPUB, Markdown, and plain-text adapters; deterministic Unicode and whitespace normalization; word count, title, author, and page metadata where available; malformed-input and unsupported-media errors; bounded archive extraction; and stable module exports.
 - TDD-010 vector curation through `apps/server`: deterministic bounded overlapping chunks, stable chunk identifiers, provider/version metadata, injectable embedding-provider contract, validated 1536-dimension vectors, bounded batch execution, timeout and cancellation handling, transactional idempotent persistence, workspace/version checks, retry-safe queue processing, and project-scoped pgvector cosine retrieval.
 - TDD-011 knowledge snapshots through `apps/server`, `@rishi/domain`, and `@rishi/database`: project/workspace-scoped source validation, transactional immutable metadata and chunk replication, captured source versions, deterministic chunk ordering, idempotent and concurrency-safe attachment, rollback on incomplete replication, project-scoped retrieval and detach, stable errors, and public NestJS exports.
+- TDD-012 project workspaces through `apps/server`, `@rishi/domain`, and `@rishi/database`: tenant-scoped project CRUD, the validated nine-state lifecycle, sequential and backward transitions, archive restoration, downstream-drift tracking, atomic optimistic locking, immutable Snapshot attachment routes, repository-only persistence access, stable errors, and public NestJS exports.
 - Creator CRUD API.
 - Workflow definition CRUD and workflow-run persistence API.
 - Project create/update/get/list API.
@@ -78,7 +79,7 @@ The validated TDD-011 implementation and its required status updates are committ
 
 - Production cloud object-storage adapter; the local storage provider and provider boundary are implemented.
 - Document upload and asynchronous ingestion orchestration; the reusable parsing module is implemented.
-- Nine-stage project state machine and active project-memory workflow.
+- Active project-memory workflow.
 - Prompt-template registry, working-context compiler, and token-budget enforcement.
 - Compliance and citation validation.
 - Script-block application APIs and document-first editor.
@@ -129,13 +130,13 @@ The repository does not contain `@rishi/users`, `@rishi/brain`, `@rishi/prompts`
 
 ## 6. Current Roadmap Stage
 
-The repository has completed **TDD-011 Snapshot and Milestone 5** of the authoritative engineering roadmap. TDD-012 Project Workspace is the next scheduled task and remains partially implemented.
+The repository has completed **TDD-012 Project Workspace within Milestone 6** of the authoritative engineering roadmap. TDD-013 Project Memory is the next scheduled task and remains partially implemented.
 
 Historical `Phase 1–10` and stabilization labels remain Git-history milestones. They are not used by this document to assert current readiness.
 
 ## 7. Last Verified Validation
 
-The current worktree was last fully validated on 2026-08-01 during TDD-011:
+The current worktree was last fully validated on 2026-08-01 during TDD-012:
 
 | Command | Result |
 | :--- | :--- |
@@ -145,12 +146,12 @@ The current worktree was last fully validated on 2026-08-01 during TDD-011:
 | `pnpm lint` | Passed with existing ESLint configuration warnings |
 | `pnpm build` | Passed |
 | `pnpm typecheck` | Passed |
-| `pnpm test` | Passed — 49 files and 275 tests passed; 4 files and 15 opt-in PostgreSQL tests skipped |
-| Focused PostgreSQL/pgvector integration | Passed — 2 files and 9 tests passed, including TDD-004 database coverage and TDD-011 snapshot persistence, rollback, isolation, idempotency, concurrency, retrieval, and immutability |
+| `pnpm test` | Passed — 52 files and 286 tests passed; 5 files and 20 opt-in PostgreSQL tests skipped |
+| Focused PostgreSQL/pgvector integration | Passed — 2 files and 8 tests passed, including TDD-004 database coverage and TDD-012 creation, transitions, optimistic concurrency, archive restoration, isolation, Snapshot attachment, constraints, and rollback behavior |
 | `pnpm audit --prod --audit-level high` | Passed — no known production dependency vulnerabilities |
 | `git diff --check` | Passed |
 
-These results cover the TDD-011 worktree, including source validation, immutable metadata and chunk copying, source-version capture, transaction rollback, project/workspace isolation, idempotent concurrent creation, project-scoped retrieval and removal, dependency injection, and public exports. The fifteen opt-in PostgreSQL tests are skipped by the required default command; nine database and snapshot tests were also executed explicitly against PostgreSQL 16 with pgvector and passed.
+These results cover the TDD-012 worktree, including project creation and listing, nine-state transition validation, backward-drift tracking, archive restoration, optimistic concurrency, workspace isolation, immutable Snapshot attachment and detachment, database constraints, dependency injection, and public exports. The twenty opt-in PostgreSQL tests are skipped by the required default command; eight database and Project Workspace tests were also executed explicitly against PostgreSQL 16 with pgvector and passed.
 
 ## 8. Verification Process
 
