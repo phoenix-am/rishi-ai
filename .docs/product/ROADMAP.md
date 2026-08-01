@@ -134,7 +134,9 @@ A roadmap task is complete only when:
 - [CURRENT_STATE.md](../CURRENT_STATE.md) is updated from verified repository evidence.
 - [IMPLEMENTATION_MATRIX.md](../IMPLEMENTATION_MATRIX.md) is updated with accurate source, test, status, and verification data.
 - Documentation changes follow [CHANGE_POLICY.md](../CHANGE_POLICY.md).
-- Product Owner review is completed.
+- Senior QA Audit passes with no unresolved Critical or Major findings.
+- Documentation is synchronized.
+- Git workflow defined in ENGINEERING_RULEBOOK.md has completed successfully.
 
 Partial implementation, compilation, or passing tests alone does not satisfy this Definition of Done.
 
