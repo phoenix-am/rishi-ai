@@ -37,7 +37,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.2.0",
+    "fastify": "^5.12.1",
     "fflate": "0.8.3",
     "google-tts-api": "^2.0.2",
     "graphile-worker": "0.17.3",
